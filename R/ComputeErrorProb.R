@@ -14,6 +14,18 @@
 #' @examples
 #' \dontrun{
 #'
+#' ObsPredPar <- new(Class = 'contObsPredModelParam',
+#'                   Data = Data,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
+#'
+#' ImpParam <- new(Class = 'MeanImputationParam',
+#'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
+#'                 DomainNames =  c('Tame_05._2.', 'ActivEcono_35._4._2.1.4._0'))
+#' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
+#'                          RawData = FD.StQList,
+#'                          EdData = FG.StQList,
+#'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
+#'                          Imputation = ImpParam)
 #' ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
 #'
 #' }
@@ -50,14 +62,13 @@ setMethod(f = "ComputeErrorProb",
               localRawData.dm <- merge(Units, localRawData.dm, all.x = TRUE, by = IDQuals)
               localEdData.dm <- dcast_StQ(EdData[[Period]], localVariables)
               localEdData.dm <- merge(Units, localEdData.dm, all.x = TRUE, by = IDQuals)
-              localData.dm <- merge(localEdData.dm, localEdData.dm)
+              localData.dm <- merge(localEdData.dm, localRawData.dm)
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
                 localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
-
 
               }
               return(localData.dm)
@@ -72,37 +83,45 @@ setMethod(f = "ComputeErrorProb",
             return(localOutput)
 
           })
-          output <- Reduce(function(x, y){merge(x, y)}, output, init = output[[1]])
+          output <- Reduce(function(x, y){merge(x, y, by = intersect(names(x), names(y)))}, output, init = output[[1]])
 
           DomainNames <- Param@Imputation@DomainNames
           Domains <- dcast_StQ(object@Data, ExtractNames(DomainNames))
           output <- merge(output, Domains, by = IDQuals, all.y = TRUE)
           output <- Impute(output, Param@Imputation)
-          nVariables <- length(Variables)
-          newVNCVar <- new(Class = 'VNCdt',
-                           data.table(IDQual = rep('', nVariables),
-                                      NonIDQual = rep('', nVariables),
-                                      IDDD = paste0('p.', Variables),
-                                      UnitName = paste0('p.', Variables), InFiles = 'FF'))
-          newVNC <- BuildVNC(list(MicroData = newVNCVar))
-          auxDT <- data.table(Variable = paste0('p.', Variables),
-                              Sort = rep('IDDD', nVariables),
-                              Class = rep('numeric', nVariables),
-                              Length = rep('10', nVariables))
-          for(qual.index in seq(along = IDQuals)){
 
-            auxDT[, (paste0('Qual', qual.index)) := IDQuals[qual.index]]
-          }
-          auxDT[, ValueRegExp := '[0-9\\.]+']
-          newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = new(Class = 'DDdt', auxDT))
+          DD <- getDD(object@Data)
+          VNC <- getVNC(DD)
+          VNCcols <- names(VNC$MicroData)
           for (Var in Variables){
-            object@Data <- setValues(object = object@Data,
-                                     newDD = newDD,
-                                     DDslot = 'MicroData',
-                                     Value = output[[Var]])
+
+            localVar <- ExtractNames(Var)
+            auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
+            auxDDdt[, Variable := paste0('ErrorProb', localVar)]
+            newDDdt <- new(Class = 'DDdt', auxDDdt)
+
+            auxVNCdt <- VarNamesToDT(Var, DD)
+            auxVNCdt[, IDDD := paste0('ErrorProb', IDDD)]
+            for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
+            for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
+            newCols <- setdiff(VNCcols, names(auxVNCdt))
+            auxVNCdt[, (newCols) := '']
+            auxVNCdt[, UnitName := paste0('ErrorProb', Var)]
+            setcolorder(auxVNCdt, VNCcols)
+            newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
+            newVNC <- BuildVNC(newVNCdt)
+
+            newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+            newDD <- DD + newDD
+
+            newData <- output[, c(IDQuals, Var), with = FALSE]
+            setnames(newData, Var, paste0('ErrorProb', Var))
+            newStQ <- melt_StQ(newData, newDD)
+            object@Data <- object@Data + newStQ
           }
 
-          object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('p.', Variables))
+
+          object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
 
 
           return(object)

@@ -45,6 +45,12 @@ setClass(Class = "ErrorProbMLEParam",
                           Imputation = new(Class = 'MeanImputationParam')),
          validity = function(object){
 
+         if (!all(object@VarNames == object@Imputation@VarNames)) {
+
+           stop('[StQImputation:: validity ErrorProbMLEParam] The slots VarNames in the object and in the slot Imputation must be the same.\n')
+
+         }
+
          return(TRUE)
          }
 )
