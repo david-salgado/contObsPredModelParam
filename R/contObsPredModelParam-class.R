@@ -6,21 +6,31 @@
 #'
 #' @slot Data \linkS4class{data.table} with the parameters or all data necessary to compute them.
 #'
-#' @slot VarRoles List with components \code{Units}, \code}Domains}, \code{DesignW},
+#' @slot VarRoles List with components \code{Units}, \code{Domains}, \code{DesignW},
 #'       \code{PredValues}, \code{PredSTD}, \code{ObsSTD}, \code{ErrorProb} being character vectors
 #'       containing the column names according to their respective role in the model.
+#'
 #'
 #' @examples
 #' # An empty contObsPredModelParam object:
 #' new(Class = 'contObsPredModelParam')
 #'
-#' @import data.table
+#' \dontrun{
+#'
+#' ObsPredPar <- new(Class = 'contObsPredModelParam',
+#'                   Data = Data,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.')
+#'                    )
+#'
+#' }
+#'
+#' @import data.table StQ
 #'
 #' @export
 setClass(Class = "contObsPredModelParam",
-         slots = c(Data = 'data.table',
+         slots = c(Data = 'StQ',
                    VarRoles = 'list'),
-         prototype = list(Data = data.table::data.table(),
+         prototype = list(Data = new(Class = 'StQ'),
                           VarRoles = list(Units = character(0),
                                           Domains = character(0),
                                           DesignW = character(0),
@@ -30,11 +40,18 @@ setClass(Class = "contObsPredModelParam",
                                           ErrorProb = character(0))),
          validity = function(object){
 
-           Data <- slot(object, 'Data')
-           DataColNames <- names(Data)
-
            VarRoles <- slot(object, 'VarRoles')
+           if (!all(names(VarRoles) %in% c('Units', 'Domains', 'DesignW',
+                                           'PredValues', 'PredSTD', 'ObsSTD', 'ErrorProb'))){
+
+             stop('[contObsPredModelParam: validity] All components of VarRoles must be one of these: Units, Domains, DesignW, PredValues, PredSTD, ObsSTD, ErrorProb.')
+
+           }
            Variables <- unlist(VarRoles)
+
+           slotData <- slot(object, 'Data')
+           Data <- dcast_StQ(slotData, setdiff(ExtractNames(Variables), getIDQual(slotData)))
+           DataColNames <- names(Data)
 
            VarNotinData <- setdiff(Variables, DataColNames)
            if (length(VarNotinData) != 0) {

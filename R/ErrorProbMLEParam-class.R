@@ -4,17 +4,34 @@
 #' a continuous observation-prediction model in the optimization approach to selective editing.
 #'
 #'
-#' @slot Data \linkS4class{data.table} with the parameters or all data necessary to compute them.
+#' @slot RawData \linkS4class{StQList} object with the raw data.
 #'
-#' @slot VarRoles List with components \code{Units}, \code}Domains}, \code{DesignW},
-#'       \code{PredValues}, \code{PredSTD}, \code{ObsSTD}, \code{ErrorProb} being character vectors
-#'       containing the column names according to their respective role in the model.
+#' @slot EdData \linkS4class{StQList} object with the edited data.
+#'
+#' @slot VarNames Character vector with the names of the variables whose probability errors are to
+#' be computed.
+#'
+#' @slot Imputation \linkS4class{ImputationParam} object with the parameters to imputed missing
+#' values during the computation of the error probabilities.
 #'
 #' @examples
 #' # An empty contObsPredModelParam object:
 #' new(Class = 'contObsPredModelParam')
 #'
-#' @import data.table StQ RepoTime ImputationParam
+#' \dontrun{
+#' ImpParam <- new(Class = 'MeanImputationParam',
+#'                 VarNames = 'CifraNeg_13.___',
+#'                 DomainNames =  'Tame_05._4.')
+#' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
+#'                          RawData = FD.StQList,
+#'                          EdData = FG.StQList,
+#'                          VarNames = 'CifraNeg_13.___',
+#'                          Imputation = ImpParam)
+#'
+#'
+#' }
+#'
+#' @import data.table StQ RepoTime StQImputation
 #'
 #' @export
 setClass(Class = "ErrorProbMLEParam",
@@ -25,11 +42,9 @@ setClass(Class = "ErrorProbMLEParam",
          prototype = list(RawData = new(Class = 'StQList'),
                           EdData = new(Class = 'StQList'),
                           VarNames = character(0),
-                          ImputationParam = 'MeanImputationParam'),
+                          Imputation = new(Class = 'MeanImputationParam')),
          validity = function(object){
 
-
-
-           return(TRUE)
+         return(TRUE)
          }
 )

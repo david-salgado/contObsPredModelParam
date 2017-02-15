@@ -17,8 +17,14 @@ Imports:
     methods (>= 3.3.0),
     data.table (>= 1.10.0),
     StQ (>= 0.3.3),
-    RepoTime (>= 0.1.0)
+    RepoTime (>= 0.1.0),
+    StQImputation (>= 0.0.1)
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 5.0.1
+Collate:
+    'ErrorProbMLEParam-class.R'
+    'ErrorProbParam-class.R'
+    'contObsPredModelParam-class.R'
+    'ComputeErrorProb.R'
