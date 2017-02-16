@@ -28,5 +28,6 @@ Collate:
     'ErrorProbParam-class.R'
     'contObsPredModelParam-class.R'
     'ComputeErrorProb.R'
-    'ObsVarMLEParam-class.R'
-    'ObsVarParam-class.R'
+    'ObsErrVarMLEParam-class.R'
+    'ObsErrVarParam-class.R'
+    'ComputeObsErrVar.R'

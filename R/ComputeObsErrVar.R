@@ -26,7 +26,7 @@
 #'                          EdData = FD.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
-#' ComputeErrorProb(ObsPredPar, ObsErrVarMLEParam)
+#' ComputeObsErrVar(ObsPredPar, ObsErrVarMLEParam)
 #'
 #' }
 setGeneric("ComputeObsErrVar", function(object, Param) {standardGeneric("ComputeObsErrVar")})
@@ -58,28 +58,31 @@ setMethod(f = "ComputeObsErrVar",
             PeriodList <- lapply(CommonPeriods, function(Period){
 
               localVariables <- ExtractNames(Variables)
-              localRawData.dm <- dcast_StQ(RawData[[Period]], localVariables)
+              localRawData.dm <- dcast_StQ(RawData[[Period]], localVariables)[, c(IDQuals, Variables), with = FALSE]
               localRawData.dm <- merge(Units, localRawData.dm, all.x = TRUE, by = IDQuals)
-              localEdData.dm <- dcast_StQ(EdData[[Period]], localVariables)
+              localEdData.dm <- dcast_StQ(EdData[[Period]], localVariables)[, c(IDQuals, Variables), with = FALSE]
               localEdData.dm <- merge(Units, localEdData.dm, all.x = TRUE, by = IDQuals)
               localData.dm <- merge(localEdData.dm, localRawData.dm)
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
-                localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1]
+                localData.dm[, (paste0('ObsError.', Var)) := -get(paste0(Var, '.x')) + get(paste0(Var, '.y')) ]
+                localData.dm[, (paste0('NumError.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1 ]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
 
               }
               return(localData.dm)
             })
+
             nPeriods <- length(PeriodList)
             ProbList.dt <- rbindlist(PeriodList)
 
             output <- lapply(Variables, function(Var){
 
-              localOutput <- ProbList.dt[, sum(get(paste0('Unit.p.', Var)), na.rm = TRUE) / nPeriods, by = IDQuals]
+              localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / sum(get(paste0('NumError.', Var)), na.rm = TRUE), by = IDQuals]
               setnames(localOutput, 'V1', Var)
+              localOutput[is.nan(get(Var)), (Var) := 0]
               return(localOutput)
 
             })
@@ -97,16 +100,16 @@ setMethod(f = "ComputeObsErrVar",
 
               localVar <- ExtractNames(Var)
               auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
-              auxDDdt[, Variable := paste0('ErrorProb', localVar)]
+              auxDDdt[, Variable := paste0('ObsErrVar', localVar)]
               newDDdt <- new(Class = 'DDdt', auxDDdt)
 
               auxVNCdt <- VarNamesToDT(Var, DD)
-              auxVNCdt[, IDDD := paste0('ErrorProb', IDDD)]
+              auxVNCdt[, IDDD := paste0('ObsErrVar', IDDD)]
               for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
               for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
               newCols <- setdiff(VNCcols, names(auxVNCdt))
               auxVNCdt[, (newCols) := '']
-              auxVNCdt[, UnitName := paste0('ErrorProb', Var)]
+              auxVNCdt[, UnitName := paste0('ObsErrVar', Var)]
               setcolorder(auxVNCdt, VNCcols)
               newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
               newVNC <- BuildVNC(newVNCdt)
@@ -115,7 +118,7 @@ setMethod(f = "ComputeObsErrVar",
               newDD <- DD + newDD
 
               newData <- output[, c(IDQuals, Var), with = FALSE]
-              setnames(newData, Var, paste0('ErrorProb', Var))
+              setnames(newData, Var, paste0('ObsErrVar', Var))
               newStQ <- melt_StQ(newData, newDD)
               object@Data <- object@Data + newStQ
             }
