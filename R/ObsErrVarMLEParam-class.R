@@ -22,7 +22,7 @@
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = 'CifraNeg_13.___',
 #'                 DomainNames =  'Tame_05._4.')
-#' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
+#' ObsErrVarMLEParam <- new(Class = 'ObsErrVarMLEParam',
 #'                          RawData = FD.StQList,
 #'                          EdData = FG.StQList,
 #'                          VarNames = 'CifraNeg_13.___',
@@ -34,7 +34,7 @@
 #' @import data.table StQ RepoTime StQImputation
 #'
 #' @export
-setClass(Class = "ObsVarMLEParam",
+setClass(Class = "ObsErrVarMLEParam",
          slots = c(RawData = 'StQList',
                    EdData = 'StQList',
                    VarNames = 'character',
