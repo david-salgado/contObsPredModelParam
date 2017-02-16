@@ -1,6 +1,6 @@
-#' @title S4 class for the parameters of the ML estimation of the probability of measurement error
+#' @title S4 class for the parameters of the ML estimation of the obervation error variance
 #'
-#' @description Definition of the S4 class named \code{ErrorProbMLEParam} for the parameters of
+#' @description Definition of the S4 class named \code{ObsVarMLEParam} for the parameters of
 #' a continuous observation-prediction model in the optimization approach to selective editing.
 #'
 #'
@@ -15,8 +15,8 @@
 #' values during the computation of the error probabilities.
 #'
 #' @examples
-#' # An empty contObsPredModelParam object:
-#' new(Class = 'ErrorProbMLEParam')
+#' # An empty ObsVarMLEParam object:
+#' new(Class = 'ObsVarMLEParam')
 #'
 #' \dontrun{
 #' ImpParam <- new(Class = 'MeanImputationParam',
@@ -34,7 +34,7 @@
 #' @import data.table StQ RepoTime StQImputation
 #'
 #' @export
-setClass(Class = "ErrorProbMLEParam",
+setClass(Class = "ObsVarMLEParam",
          slots = c(RawData = 'StQList',
                    EdData = 'StQList',
                    VarNames = 'character',
@@ -45,12 +45,12 @@ setClass(Class = "ErrorProbMLEParam",
                           Imputation = new(Class = 'MeanImputationParam')),
          validity = function(object){
 
-         if (!all(object@VarNames == object@Imputation@VarNames)) {
+           if (!all(object@VarNames == object@Imputation@VarNames)) {
 
-           stop('[StQImputation:: validity ErrorProbMLEParam] The slots VarNames in the object and in the slot Imputation must be the same.\n')
+             stop('[StQImputation:: validity ErrorProbMLEParam] The slots VarNames in the object and in the slot Imputation must be the same.\n')
 
-         }
+           }
 
-         return(TRUE)
+           return(TRUE)
          }
 )

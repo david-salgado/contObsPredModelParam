@@ -21,5 +21,14 @@ containing the column names according to their respective role in the model.}
 # An empty contObsPredModelParam object:
 new(Class = 'contObsPredModelParam')
 
+\dontrun{
+
+ObsPredPar <- new(Class = 'contObsPredModelParam',
+                  Data = Data,
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.')
+                   )
+
+}
+
 }
 

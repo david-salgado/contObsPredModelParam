@@ -25,6 +25,22 @@ probabilities computed for each variable and each statistical unit.
 \code{ComputeErrorProb} computes the probability of measurement error for each statistical unit
 }
 \examples{
-\dontrun{}
+\dontrun{
+
+ObsPredPar <- new(Class = 'contObsPredModelParam',
+                  Data = Data,
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
+
+ImpParam <- new(Class = 'MeanImputationParam',
+                VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
+                DomainNames =  c('Tame_05._2.', 'ActivEcono_35._4._2.1.4._0'))
+ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
+                         RawData = FD.StQList,
+                         EdData = FG.StQList,
+                         VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
+                         Imputation = ImpParam)
+ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
+
+}
 }
 
