@@ -7,7 +7,7 @@ Authors@R: c(
     person("David", "Salgado", email = "david.salgado.fernandez@gmail.com", role = c("cre", "aut")),
     person("Elisa", "Esteban", email = "elisa.esteban.segurado@gmail.com", role = "aut"),
     person("Soledad", "Saldaña", email = "soledad.saldana.diaz@gmail.com", role = "aut"))
-Maintainer: David Salgado <david.salgado.fernandez@google.com>
+Maintainer: David Salgado <david.salgado.fernandez@gmail.com>
 Description: Definition of an S4 class and methods to handle and compute the
     parameters of a continuous observation-prediction model under the optimization
     approach to selective editing
@@ -18,7 +18,8 @@ Imports:
     data.table (>= 1.10.0),
     StQ (>= 0.3.3),
     RepoTime (>= 0.1.0),
-    StQImputation (>= 0.0.1)
+    StQImputation (>= 0.0.1),
+    StQPrediction (>= 0.0.1)
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -28,6 +29,7 @@ Collate:
     'ErrorProbParam-class.R'
     'contObsPredModelParam-class.R'
     'ComputeErrorProb.R'
-    'ObsErrVarMLEParam-class.R'
-    'ObsErrVarParam-class.R'
-    'ComputeObsErrVar.R'
+    'ObsErrSTDMLEParam-class.R'
+    'ObsErrSTDParam-class.R'
+    'ComputeObsErrSTD.R'
+    'ComputePred.R'

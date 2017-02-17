@@ -1,9 +1,9 @@
-setClassUnion('ObsErrVarParam', c('ObsErrVarMLEParam'))
+setClassUnion('ObsErrSTDParam', c('ObsErrSTDMLEParam'))
 #' @title Virtual S4 class to handle parameters for the estimation of the variance of the
 #' observation error
 #'
-#' @name ObsErrVarParam
+#' @name ObsErrSTDParam
 #'
-#' @include ObsErrVarMLEParam-class.R
+#' @include ObsErrSTDMLEParam-class.R
 #'
 NULL

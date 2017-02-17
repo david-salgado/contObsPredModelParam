@@ -35,16 +35,16 @@ setClass(Class = "contObsPredModelParam",
                                           Domains = character(0),
                                           DesignW = character(0),
                                           PredValues = character(0),
-                                          PredSTD = character(0),
-                                          ObsSTD= character(0),
+                                          PredErrSTD = character(0),
+                                          ObsErrSTD= character(0),
                                           ErrorProb = character(0))),
          validity = function(object){
 
            VarRoles <- slot(object, 'VarRoles')
            if (!all(names(VarRoles) %in% c('Units', 'Domains', 'DesignW',
-                                           'PredValues', 'PredSTD', 'ObsSTD', 'ErrorProb'))){
+                                           'PredValues', 'PredErrSTD', 'ObsErrSTD', 'ErrorProb'))){
 
-             stop('[contObsPredModelParam: validity] All components of VarRoles must be one of these: Units, Domains, DesignW, PredValues, PredSTD, ObsSTD, ErrorProb.')
+             stop('[contObsPredModelParam: validity] All components of VarRoles must be one of these: Units, Domains, DesignW, PredValues, PredErrSTD, ObsErrSTD, ErrorProb.')
 
            }
            Variables <- unlist(VarRoles)

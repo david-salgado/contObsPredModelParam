@@ -1,13 +1,13 @@
-#' \code{ComputeObsErrVar} computes the observation error variance for each statistical unit
+#' \code{ComputeObsErrSTD} computes the observation error variance for each statistical unit
 #'
 #'
 #' @param object Object of class \linkS4class{contObsPredModelParam} containing the statistical
 #' units whose probability of measurement error for each variable is to be computed.
 #'
-#' @param Param Object of virtual class \linkS4class{ObsErrVarParam} with the parameters determining
+#' @param Param Object of virtual class \linkS4class{ObsErrSTDParam} with the parameters determining
 #' the method of computation of the observation error variance of each statistical unit.
 #'
-#' @return Object of class \linkS4class{ObsErrVarParam} with the measurement error
+#' @return Object of class \linkS4class{ObsErrSTDParam} with the measurement error
 #' probabilities computed for each variable and each statistical unit.
 #'
 #'
@@ -26,20 +26,20 @@
 #'                          EdData = FD.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
-#' ComputeObsErrVar(ObsPredPar, ObsErrVarMLEParam)
+#' ComputeObsErrSTD(ObsPredPar, ObsErrVarMLEParam)
 #'
 #' }
-setGeneric("ComputeObsErrVar", function(object, Param) {standardGeneric("ComputeObsErrVar")})
+setGeneric("ComputeObsErrSTD", function(object, Param) {standardGeneric("ComputeObsErrSTD")})
 
-#' @rdname ComputeObsErrVar
+#' @rdname ComputeObsErrSTD
 #'
-#' @include contObsPredModelParam-class.R ObsErrVarParam-class.R
+#' @include contObsPredModelParam-class.R ObsErrSTDParam-class.R
 #'
 #' @import data.table RepoTime StQ StQImputation
 #'
 #' @export
-setMethod(f = "ComputeObsErrVar",
-          signature = c("contObsPredModelParam", "ObsErrVarParam"),
+setMethod(f = "ComputeObsErrSTD",
+          signature = c("contObsPredModelParam", "ObsErrSTDParam"),
           function(object, Param){
 
             RawPeriods <- getPeriods(Param@RawData)
@@ -83,6 +83,7 @@ setMethod(f = "ComputeObsErrVar",
               localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / sum(get(paste0('NumError.', Var)), na.rm = TRUE), by = IDQuals]
               setnames(localOutput, 'V1', Var)
               localOutput[is.nan(get(Var)), (Var) := 0]
+              localOutput[, (Var):= sqrt(get(Var))]
               return(localOutput)
 
             })
@@ -100,16 +101,16 @@ setMethod(f = "ComputeObsErrVar",
 
               localVar <- ExtractNames(Var)
               auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
-              auxDDdt[, Variable := paste0('ObsErrVar', localVar)]
+              auxDDdt[, Variable := paste0('ObsErrSTD', localVar)]
               newDDdt <- new(Class = 'DDdt', auxDDdt)
 
               auxVNCdt <- VarNamesToDT(Var, DD)
-              auxVNCdt[, IDDD := paste0('ObsErrVar', IDDD)]
+              auxVNCdt[, IDDD := paste0('ObsErrSTD', IDDD)]
               for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
               for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
               newCols <- setdiff(VNCcols, names(auxVNCdt))
               auxVNCdt[, (newCols) := '']
-              auxVNCdt[, UnitName := paste0('ObsErrVar', Var)]
+              auxVNCdt[, UnitName := paste0('ObsErrSTD', Var)]
               setcolorder(auxVNCdt, VNCcols)
               newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
               newVNC <- BuildVNC(newVNCdt)
@@ -118,13 +119,12 @@ setMethod(f = "ComputeObsErrVar",
               newDD <- DD + newDD
 
               newData <- output[, c(IDQuals, Var), with = FALSE]
-              setnames(newData, Var, paste0('ObsErrVar', Var))
+              setnames(newData, Var, paste0('ObsErrSTD', Var))
               newStQ <- melt_StQ(newData, newDD)
               object@Data <- object@Data + newStQ
             }
 
-
-            object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
+            object@VarRoles$ObsErrSTD <- c(object@VarRoles$ObsErrSTD, paste0('ObsErrSTD', Variables))
 
 
             return(object)
