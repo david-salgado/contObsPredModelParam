@@ -29,3 +29,8 @@ Collate:
     'ErrorProbParam-class.R'
     'contObsPredModelParam-class.R'
     'ComputeErrorProb.R'
+    'ObsErrorSTDMLEParam-class.R'
+    'ObsErrorSTDParam-class.R'
+    'ComputeObsErrorSTD.R'
+    'ComputePred.R'
+    'setDesignW.R'
