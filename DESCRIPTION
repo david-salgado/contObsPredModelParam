@@ -12,7 +12,7 @@ Description: Definition of an S4 class and methods to handle and compute the
     parameters of a continuous observation-prediction model under the optimization
     approach to selective editing
 Depends:
-    R (>= 3.3.2)
+    R (>= 3.3.0)
 Imports:
     methods (>= 3.3.0),
     data.table (>= 1.10.0),
@@ -29,7 +29,3 @@ Collate:
     'ErrorProbParam-class.R'
     'contObsPredModelParam-class.R'
     'ComputeErrorProb.R'
-    'ObsErrSTDMLEParam-class.R'
-    'ObsErrSTDParam-class.R'
-    'ComputeObsErrSTD.R'
-    'ComputePred.R'

@@ -14,8 +14,9 @@ a continuous observation-prediction model in the optimization approach to select
 \item{\code{Data}}{\linkS4class{data.table} with the parameters or all data necessary to compute them.}
 
 \item{\code{VarRoles}}{List with components \code{Units}, \code{Domains}, \code{DesignW},
-\code{PredValues}, \code{PredSTD}, \code{ObsSTD}, \code{ErrorProb} being character vectors
-containing the column names according to their respective role in the model.}
+\code{ObjVariables}, \code{PredValues}, \code{PredErrorSTD}, \code{ObsErrorSTD},
+\code{ErrorProb} being character vectors containing the column names according to their
+respective role in the model.}
 }}
 \examples{
 # An empty contObsPredModelParam object:

@@ -14,19 +14,34 @@
 #' @examples
 #' \dontrun{
 #'
+#' load('C:/FDStQList.RData')
+#' load('C:/FGStQList.RData')
+#' FGListofStQ <- getRepo(FGList)
+#' FGListofStQ <- lapply(getPeriods(FD.StQList), function(Month){
+#' 
+#'  out <- FGList[[Month]] + FD.StQList[[Month]][IDDD %in% c('Tame', 'ActivEcono')]
+#'  return(out)
+#' })
+#' names(FGListofStQ) <- getPeriods(FD.StQList)
+#' FGList <- BuildStQList(FGListofStQ)
+#' FG <- FGList[['MM112016']]
+#' FGList <- FGList[-11]
+#' FDList <- FD.StQList[-11]
+#' FD <- FD.StQList[['MM112016']]
+#' rm(FD.StQList, FG.StQList, FGListofStQ)
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = Data,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
+#'                   Data = FG,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._2.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
 #' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
-#'                          RawData = FD.StQList,
-#'                          EdData = FG.StQList,
+#'                          RawData = FGList,
+#'                          EdData = FDList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
-#' ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
+#' ObsPredPar <- ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
 #'
 #' }
 setGeneric("ComputeErrorProb", function(object, Param) {standardGeneric("ComputeErrorProb")})
@@ -54,6 +69,7 @@ setMethod(f = "ComputeErrorProb",
             stop('[contObsPredModelParam: validity] No common time periods between RawData and EdData.')
 
           }
+
           Variables <- Param@VarNames
           PeriodList <- lapply(CommonPeriods, function(Period){
 
@@ -123,6 +139,11 @@ setMethod(f = "ComputeErrorProb",
 
           object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
 
+          if (length(object@VarRoles[['ObjVariables']]) == 0) {
+
+            object@VarRoles[['ObjVariables']] <- Param@VarNames
+
+          }
 
           return(object)
 

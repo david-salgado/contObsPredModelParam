@@ -7,8 +7,9 @@
 #' @slot Data \linkS4class{data.table} with the parameters or all data necessary to compute them.
 #'
 #' @slot VarRoles List with components \code{Units}, \code{Domains}, \code{DesignW},
-#'       \code{PredValues}, \code{PredSTD}, \code{ObsSTD}, \code{ErrorProb} being character vectors
-#'       containing the column names according to their respective role in the model.
+#'       \code{ObjVariables}, \code{PredValues}, \code{PredErrorSTD}, \code{ObsErrorSTD},
+#'       \code{ErrorProb} being character vectors containing the column names according to their
+#'       respective role in the model.
 #'
 #'
 #' @examples
@@ -34,6 +35,7 @@ setClass(Class = "contObsPredModelParam",
                           VarRoles = list(Units = character(0),
                                           Domains = character(0),
                                           DesignW = character(0),
+                                          ObjVariables = character(0),
                                           PredValues = character(0),
                                           PredErrSTD = character(0),
                                           ObsErrSTD= character(0),
@@ -41,8 +43,8 @@ setClass(Class = "contObsPredModelParam",
          validity = function(object){
 
            VarRoles <- slot(object, 'VarRoles')
-           if (!all(names(VarRoles) %in% c('Units', 'Domains', 'DesignW',
-                                           'PredValues', 'PredErrSTD', 'ObsErrSTD', 'ErrorProb'))){
+           if (!all(names(VarRoles) %in% c('Units', 'Domains', 'DesignW', 'ObjVariables',
+                                           'PredValues', 'PredErrorSTD', 'ObsErrorSTD', 'ErrorProb'))){
 
              stop('[contObsPredModelParam: validity] All components of VarRoles must be one of these: Units, Domains, DesignW, PredValues, PredErrSTD, ObsErrSTD, ErrorProb.')
 
