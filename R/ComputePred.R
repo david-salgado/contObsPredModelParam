@@ -75,17 +75,19 @@ setMethod(f = "ComputePred",
                 for (idqual in IDQuals){ localauxVNCdt[, (idqual) := '.'] }
                 newCols <- setdiff(VNCcols, names(localauxVNCdt))
                 localauxVNCdt[, (newCols) := '']
-                localauxVNCdt[, UnitName := paste0(prefix, Var)]
+                localauxVNCdt[, UnitName := paste0(prefix, IDDDToUnitNames(Var, DD))]
                 setcolorder(localauxVNCdt, VNCcols)
                 newVNCdt <- list(MicroData = new(Class = 'VNCdt', localauxVNCdt))
                 newVNC <- BuildVNC(newVNCdt)
 
                 newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
                 newDD <- DD + newDD
+                auxOutput <- output[, c(IDQuals, paste0(prefix, Var)), with = FALSE]
+                setnames(auxOutput, IDDDToUnitNames(names(auxOutput), newDD))
 
                 #newData <- output[, c(IDQuals, Var), with = FALSE]
                 #setnames(newData, Var, paste0(prefix, Var))
-                newStQ <- melt_StQ(output[, c(IDQuals, paste0(prefix, Var)), with = FALSE], newDD)
+                newStQ <- melt_StQ(auxOutput, newDD)
                 object@Data <- object@Data + newStQ
               }
             }

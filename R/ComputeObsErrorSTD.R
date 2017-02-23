@@ -110,7 +110,7 @@ setMethod(f = "ComputeObsErrorSTD",
               for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
               newCols <- setdiff(VNCcols, names(auxVNCdt))
               auxVNCdt[, (newCols) := '']
-              auxVNCdt[, UnitName := paste0('ObsErrorSTD', Var)]
+              auxVNCdt[, UnitName := paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD))]
               setcolorder(auxVNCdt, VNCcols)
               newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
               newVNC <- BuildVNC(newVNCdt)
@@ -119,7 +119,7 @@ setMethod(f = "ComputeObsErrorSTD",
               newDD <- DD + newDD
 
               newData <- output[, c(IDQuals, Var), with = FALSE]
-              setnames(newData, Var, paste0('ObsErrorSTD', Var))
+              setnames(newData, Var, paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD)))
               newStQ <- melt_StQ(newData, newDD)
               object@Data <- object@Data + newStQ
             }
