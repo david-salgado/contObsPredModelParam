@@ -54,8 +54,8 @@ setClass(Class = "contObsPredModelParam",
            slotData <- slot(object, 'Data')
            Data <- dcast_StQ(slotData, setdiff(ExtractNames(Variables), getIDQual(slotData)))
            DataColNames <- names(Data)
-
            VarNotinData <- setdiff(Variables, DataColNames)
+
            if (length(VarNotinData) != 0) {
 
              stop(paste0('[contObsPredModelParam: validity] The following variables in VarRoles are not in the slot Data:\n',

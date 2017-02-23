@@ -18,7 +18,7 @@
 #' load('C:/FGStQList.RData')
 #' FGListofStQ <- getRepo(FGList)
 #' FGListofStQ <- lapply(getPeriods(FD.StQList), function(Month){
-#' 
+#'
 #'  out <- FGList[[Month]] + FD.StQList[[Month]][IDDD %in% c('Tame', 'ActivEcono')]
 #'  return(out)
 #' })
@@ -109,11 +109,13 @@ setMethod(f = "ComputeErrorProb",
           DD <- getDD(object@Data)
           VNC <- getVNC(DD)
           VNCcols <- names(VNC$MicroData)
+
           for (Var in Variables){
 
-            localVar <- ExtractNames(Var)
+            localVar <- unique(ExtractNames(Var))
             auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
             auxDDdt[, Variable := paste0('ErrorProb', localVar)]
+            auxDDdt[, Length := '8']
             newDDdt <- new(Class = 'DDdt', auxDDdt)
 
             auxVNCdt <- VarNamesToDT(Var, DD)
@@ -122,7 +124,7 @@ setMethod(f = "ComputeErrorProb",
             for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
             newCols <- setdiff(VNCcols, names(auxVNCdt))
             auxVNCdt[, (newCols) := '']
-            auxVNCdt[, UnitName := paste0('ErrorProb', Var)]
+            auxVNCdt[, UnitName := paste0('ErrorProb', IDDDToUnitNames(Var, DD))]
             setcolorder(auxVNCdt, VNCcols)
             newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
             newVNC <- BuildVNC(newVNCdt)
@@ -130,8 +132,18 @@ setMethod(f = "ComputeErrorProb",
             newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
             newDD <- DD + newDD
 
+            #if (localVar %in% getIDDD(newDD)) {
+
+            #  UnitVar <- IDDDToUnitNames(Var, newDD)
+            #  setnames(output, Var, UnitVar)
+
+            #} else {
+
+            #  UnitVar <- localVar
+
+            #}
             newData <- output[, c(IDQuals, Var), with = FALSE]
-            setnames(newData, Var, paste0('ErrorProb', Var))
+            setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)
             object@Data <- object@Data + newStQ
           }
