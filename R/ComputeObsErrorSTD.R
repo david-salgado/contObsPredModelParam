@@ -91,7 +91,7 @@ setMethod(f = "ComputeObsErrorSTD",
 
             DomainNames <- Param@Imputation@DomainNames
             Domains <- dcast_StQ(object@Data, ExtractNames(DomainNames))
-            output <- merge(output, Domains, by = IDQuals, all.y = TRUE)
+            output <- merge(output, Domains, by = IDQuals, all.x = TRUE)
             output <- Impute(output, Param@Imputation)
 
             DD <- getDD(object@Data)

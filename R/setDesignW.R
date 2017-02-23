@@ -18,7 +18,7 @@
 #' FD <- FD.StQList[['MM112016']]
 #' FDList <- FD.StQList[-11]
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = FD,
+#'                   Data = FG,
 #'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
 #' Weights <- StQ::dcast_StQ(ObsPredPar@Data)[, 'NOrden', with = FALSE][, Personal_07._2.___ := 1][, CifraNeg_13.___ := 1]
 #' setDesignW(ObsPredPar) <- Weights
