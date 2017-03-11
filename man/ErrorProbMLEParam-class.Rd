@@ -21,6 +21,7 @@ be computed.}
 \item{\code{Imputation}}{\linkS4class{ImputationParam} object with the parameters to imputed missing
 values during the computation of the error probabilities.}
 }}
+
 \examples{
 # An empty contObsPredModelParam object:
 new(Class = 'ErrorProbMLEParam')
@@ -31,7 +32,7 @@ ImpParam <- new(Class = 'MeanImputationParam',
                 DomainNames =  'Tame_05._4.')
 ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
                          RawData = FD.StQList,
-                         EdData = FG.StQList,
+                         EdData = FF.StQList,
                          VarNames = 'CifraNeg_13.___',
                          Imputation = ImpParam)
 
@@ -39,4 +40,3 @@ ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
 }
 
 }
-

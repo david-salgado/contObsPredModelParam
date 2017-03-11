@@ -15,27 +15,27 @@
 #' \dontrun{
 #'
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = Data,
+#'                   Data = FD,
 #'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._4.'))
 #' ObsErrVarMLEParam <- new(Class = 'ObsErrorSTDMLEParam',
-#'                          RawData = FGList,
-#'                          EdData = FDList,
+#'                          RawData = FD.StQList,
+#'                          EdData = FF.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
 #' ObsPredPar <- ComputeObsErrorSTD(ObsPredPar, ObsErrVarMLEParam)
 #'
 #' }
-setGeneric("ComputeObsErrorSTD", function(object, Param) {standardGeneric("ComputeObsErrorSTD")})
-
-#' @rdname ComputeObsErrorSTD
-#'
 #' @include contObsPredModelParam-class.R ObsErrorSTDParam-class.R
 #'
 #' @import data.table RepoTime StQ StQImputation
+
+setGeneric("ComputeObsErrorSTD", function(object, Param) {standardGeneric("ComputeObsErrorSTD")})
+
+#' @rdname ComputeObsErrorSTD
 #'
 #' @export
 setMethod(f = "ComputeObsErrorSTD",

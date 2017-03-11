@@ -18,6 +18,7 @@ a continuous observation-prediction model in the optimization approach to select
 \code{ErrorProb} being character vectors containing the column names according to their
 respective role in the model.}
 }}
+
 \examples{
 # An empty contObsPredModelParam object:
 new(Class = 'contObsPredModelParam')
@@ -25,11 +26,9 @@ new(Class = 'contObsPredModelParam')
 \dontrun{
 
 ObsPredPar <- new(Class = 'contObsPredModelParam',
-                  Data = Data,
-                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.')
-                   )
+                  Data = FD,
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 }
 
 }
-
