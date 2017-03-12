@@ -16,11 +16,11 @@
 #'
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
 #'                   Data = FD,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.'))
+#'                 DomainNames =  c('Tame_05._2.'))
 #' ObsErrVarMLEParam <- new(Class = 'ObsErrorSTDMLEParam',
 #'                          RawData = FD.StQList,
 #'                          EdData = FF.StQList,
@@ -45,8 +45,8 @@ setMethod(f = "ComputeObsErrorSTD",
             RawPeriods <- getPeriods(Param@RawData)
             EdPeriods <- getPeriods(Param@EdData)
             CommonPeriods <- intersect(EdPeriods, RawPeriods)
-            RawData <- Param@RawData[CommonPeriods]
-            EdData <- Param@EdData[CommonPeriods]
+            RawData <- subPeriods(Param@RawData, CommonPeriods)
+            EdData <- subPeriods(Param@EdData, CommonPeriods)
             Units <- getUnits(object@Data)
             IDQuals <- names(Units)
             if (length(CommonPeriods) == 0) {
@@ -54,6 +54,7 @@ setMethod(f = "ComputeObsErrorSTD",
               stop('[contObsPredModelParam: validity] No common time periods between RawData and EdData.')
 
             }
+            Variables <- Param@VarNames
             Variables <- Param@VarNames
             PeriodList <- lapply(CommonPeriods, function(Period){
 
@@ -96,36 +97,48 @@ setMethod(f = "ComputeObsErrorSTD",
 
             DD <- getDD(object@Data)
             VNC <- getVNC(DD)
+
+            auxVNCIDQual <- VNC$MicroData[IDQual %chin% IDQuals]
+            auxVNCNonIDQual <- VNC$MicroData[NonIDQual != '']
+
             VNCcols <- names(VNC$MicroData)
+
             for (Var in Variables){
 
-              localVar <- ExtractNames(Var)
-              auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
+              localVar <- unique(ExtractNames(Var))
+              auxDDdt <- DD$MicroData[Variable == localVar]
+
               auxDDdt[, Variable := paste0('ObsErrorSTD', localVar)]
-              newDDdt <- new(Class = 'DDdt', auxDDdt)
+              auxDDdt[, Length := '8']
 
               auxVNCdt <- VarNamesToDT(Var, DD)
+              auxNonIDQuals <- setdiff(names(auxVNCdt), 'IDDD')
               auxVNCdt[, IDDD := paste0('ObsErrorSTD', IDDD)]
-              for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
-              for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
-              newCols <- setdiff(VNCcols, names(auxVNCdt))
-              auxVNCdt[, (newCols) := '']
               auxVNCdt[, UnitName := paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD))]
+              auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
+              auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
+              auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
+              for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
               setcolorder(auxVNCdt, VNCcols)
-              newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
-              newVNC <- BuildVNC(newVNCdt)
+              newVNC <- BuildVNC(list(MicroData = auxVNCdt))
 
-              newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+              newDD <- DD(VNC = newVNC, MicroData = auxDDdt)
               newDD <- DD + newDD
 
               newData <- output[, c(IDQuals, Var), with = FALSE]
               setnames(newData, Var, paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD)))
               newStQ <- melt_StQ(newData, newDD)
+
               object@Data <- object@Data + newStQ
             }
 
             object@VarRoles$ObsErrorSTD <- c(object@VarRoles$ObsErrorSTD, paste0('ObsErrorSTD', Variables))
 
+            if (length(object@VarRoles[['ObjVariables']]) == 0) {
+
+              object@VarRoles[['ObjVariables']] <- Param@VarNames
+
+            }
 
             return(object)
 

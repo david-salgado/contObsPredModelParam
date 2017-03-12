@@ -30,11 +30,11 @@ probabilities computed for each variable and each statistical unit.
 
 ObsPredPar <- new(Class = 'contObsPredModelParam',
                   Data = FD,
-                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 ImpParam <- new(Class = 'MeanImputationParam',
                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-                DomainNames =  c('Tame_05._4.'))
+                DomainNames =  c('Tame_05._2.'))
 ObsErrVarMLEParam <- new(Class = 'ObsErrorSTDMLEParam',
                          RawData = FD.StQList,
                          EdData = FF.StQList,
