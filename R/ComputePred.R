@@ -45,7 +45,7 @@ setGeneric("ComputePred", function(object, Param) {standardGeneric("ComputePred"
 #'
 #' @export
 setMethod(f = "ComputePred",
-          signature = c("contObsPredModelParam", "PredlmParam"),
+          signature = c("contObsPredModelParam", "PredParam"),
           function(object, Param){
 
             RawData.StQ <- object@Data
