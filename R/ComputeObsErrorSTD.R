@@ -67,7 +67,7 @@ setMethod(f = "ComputeObsErrorSTD",
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
-                localData.dm[, (paste0('ObsError.', Var)) := -get(paste0(Var, '.x')) + get(paste0(Var, '.y')) ]
+                localData.dm[, (paste0('ObsError.', Var)) := (-get(paste0(Var, '.x')) + get(paste0(Var, '.y'))) ^ 2 ]
                 localData.dm[, (paste0('NumError.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1 ]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
@@ -81,7 +81,7 @@ setMethod(f = "ComputeObsErrorSTD",
 
             output <- lapply(Variables, function(Var){
 
-              localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / sum(get(paste0('NumError.', Var)), na.rm = TRUE), by = IDQuals]
+              localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / (sum(get(paste0('NumError.', Var)), na.rm = TRUE) - 1), by = IDQuals]
               setnames(localOutput, 'V1', Var)
               localOutput[is.nan(get(Var)), (Var) := 0]
               localOutput[, (Var):= sqrt(get(Var))]
