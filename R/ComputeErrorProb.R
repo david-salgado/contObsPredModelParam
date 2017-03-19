@@ -124,25 +124,28 @@ setMethod(f = "ComputeErrorProb",
             auxDDdt[, Length := '8']
 
             auxVNCdt <- VarNamesToDT(Var, DD)
+
             auxNonIDQuals <- setdiff(names(auxVNCdt), 'IDDD')
             auxVNCdt[, IDDD := paste0('ErrorProb', IDDD)]
             auxVNCdt[, UnitName := paste0('ErrorProb', IDDDToUnitNames(Var, DD))]
             auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
-            auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
             auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
+            auxVNCdt[IDDD != '', (IDQuals) := '.']
+            auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
             for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
             setcolorder(auxVNCdt, VNCcols)
+
             newVNC <- BuildVNC(list(MicroData = auxVNCdt))
 
             newDD <- DD(VNC = newVNC, MicroData = auxDDdt)
             newDD <- DD + newDD
 
             newData <- output[, c(IDQuals, Var), with = FALSE]
+
             setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)
             object@Data <- object@Data + newStQ
           }
-
 
           object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
 

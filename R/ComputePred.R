@@ -98,6 +98,7 @@ setMethod(f = "ComputePred",
                 auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
                 auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
                 auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
+                auxVNCdt[IDDD != '', (IDQuals) := '.']
                 for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
                 setcolorder(auxVNCdt, VNCcols)
                 newVNC <- BuildVNC(list(MicroData = auxVNCdt))
