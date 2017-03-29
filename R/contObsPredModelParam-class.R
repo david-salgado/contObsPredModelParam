@@ -20,8 +20,7 @@
 #'
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
 #'                   Data = Data,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.')
-#'                    )
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 #'
 #' }
 #'
@@ -31,7 +30,7 @@
 setClass(Class = "contObsPredModelParam",
          slots = c(Data = 'StQ',
                    VarRoles = 'list'),
-         prototype = list(Data = new(Class = 'StQ'),
+         prototype = list(Data = StQ(),
                           VarRoles = list(Units = character(0),
                                           Domains = character(0),
                                           DesignW = character(0),

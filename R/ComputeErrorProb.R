@@ -60,8 +60,8 @@ setMethod(f = "ComputeErrorProb",
           RawPeriods <- getPeriods(Param@RawData)
           EdPeriods <- getPeriods(Param@EdData)
           CommonPeriods <- intersect(EdPeriods, RawPeriods)
-          RawData <- Param@RawData[CommonPeriods]
-          EdData <- Param@EdData[CommonPeriods]
+          RawData <- subPeriods(Param@RawData, CommonPeriods)
+          EdData <- subPeriods(Param@EdData, CommonPeriods)
           Units <- getUnits(object@Data)
           IDQuals <- names(Units)
           if (length(CommonPeriods) == 0) {
@@ -108,40 +108,21 @@ setMethod(f = "ComputeErrorProb",
 
           DD <- getDD(object@Data)
           VNC <- getVNC(DD)
-          VNCcols <- names(VNC$MicroData)
-
           for (Var in Variables){
 
-            localVar <- unique(ExtractNames(Var))
-            auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
-            auxDDdt[, Variable := paste0('ErrorProb', localVar)]
-            auxDDdt[, Length := '8']
-            newDDdt <- new(Class = 'DDdt', auxDDdt)
+            localVar <- ExtractNames(Var)
+            newDDdt <- DD$MicroData[Variable == localVar]
+            newDDdt[, Variable := paste0('ErrorProb', localVar)]
 
-            auxVNCdt <- VarNamesToDT(Var, DD)
-            auxVNCdt[, IDDD := paste0('ErrorProb', IDDD)]
-            for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
-            for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
-            newCols <- setdiff(VNCcols, names(auxVNCdt))
-            auxVNCdt[, (newCols) := '']
-            auxVNCdt[, UnitName := paste0('ErrorProb', IDDDToUnitNames(Var, DD))]
-            setcolorder(auxVNCdt, VNCcols)
-            newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
-            newVNC <- BuildVNC(newVNCdt)
+            auxUnitName <- IDDDToUnitNames(Var, DD)
+            newVNCdt <- VNC$MicroData[UnitName == auxUnitName | IDQual != '' | NonIDQual != '']
+            newVNCdt[UnitName == auxUnitName, IDDD := paste0('ErrorProb', IDDD)]
+            newVNCdt[UnitName == auxUnitName, UnitName := paste0('ErrorProb', UnitName)]
+            newVNC <- BuildVNC(list(MicroData = newVNCdt))
 
-            newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+            newDD <- DD(VNC = newVNC, MicroData = newDDdt)
             newDD <- DD + newDD
 
-            #if (localVar %in% getIDDD(newDD)) {
-
-            #  UnitVar <- IDDDToUnitNames(Var, newDD)
-            #  setnames(output, Var, UnitVar)
-
-            #} else {
-
-            #  UnitVar <- localVar
-
-            #}
             newData <- output[, c(IDQuals, Var), with = FALSE]
             setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)

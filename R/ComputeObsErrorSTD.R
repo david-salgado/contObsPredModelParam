@@ -45,8 +45,8 @@ setMethod(f = "ComputeObsErrorSTD",
             RawPeriods <- getPeriods(Param@RawData)
             EdPeriods <- getPeriods(Param@EdData)
             CommonPeriods <- intersect(EdPeriods, RawPeriods)
-            RawData <- Param@RawData[CommonPeriods]
-            EdData <- Param@EdData[CommonPeriods]
+            RawData <- subPeriods(Param@RawData, CommonPeriods)
+            EdData <- subPeriods(Param@EdData, CommonPeriods)
             Units <- getUnits(object@Data)
             IDQuals <- names(Units)
             if (length(CommonPeriods) == 0) {
@@ -63,10 +63,11 @@ setMethod(f = "ComputeObsErrorSTD",
               localEdData.dm <- dcast_StQ(EdData[[Period]], localVariables)[, c(IDQuals, Variables), with = FALSE]
               localEdData.dm <- merge(Units, localEdData.dm, all.x = TRUE, by = IDQuals)
               localData.dm <- merge(localEdData.dm, localRawData.dm)
+
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
-                localData.dm[, (paste0('ObsError.', Var)) := -get(paste0(Var, '.x')) + get(paste0(Var, '.y')) ]
+                localData.dm[, (paste0('ObsError.', Var)) := (-get(paste0(Var, '.x')) + get(paste0(Var, '.y'))) ^ 2 ]
                 localData.dm[, (paste0('NumError.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1 ]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
@@ -83,7 +84,7 @@ setMethod(f = "ComputeObsErrorSTD",
               localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / sum(get(paste0('NumError.', Var)), na.rm = TRUE), by = IDQuals]
               setnames(localOutput, 'V1', Var)
               localOutput[is.nan(get(Var)), (Var) := 0]
-              localOutput[, (Var):= sqrt(get(Var))]
+              localOutput[, (Var) := sqrt(get(Var))]
               return(localOutput)
 
             })
@@ -96,26 +97,19 @@ setMethod(f = "ComputeObsErrorSTD",
 
             DD <- getDD(object@Data)
             VNC <- getVNC(DD)
-            VNCcols <- names(VNC$MicroData)
             for (Var in Variables){
 
               localVar <- ExtractNames(Var)
-              auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
-              auxDDdt[, Variable := paste0('ObsErrorSTD', localVar)]
-              newDDdt <- new(Class = 'DDdt', auxDDdt)
+              newDDdt <- DD$MicroData[Variable == localVar]
+              newDDdt[, Variable := paste0('ObsErrorSTD', localVar)]
 
-              auxVNCdt <- VarNamesToDT(Var, DD)
-              auxVNCdt[, IDDD := paste0('ObsErrorSTD', IDDD)]
-              for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
-              for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
-              newCols <- setdiff(VNCcols, names(auxVNCdt))
-              auxVNCdt[, (newCols) := '']
-              auxVNCdt[, UnitName := paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD))]
-              setcolorder(auxVNCdt, VNCcols)
-              newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
-              newVNC <- BuildVNC(newVNCdt)
+              auxUnitName <- IDDDToUnitNames(Var, DD)
+              newVNCdt <- VNC$MicroData[UnitName == auxUnitName | IDQual != '' | NonIDQual != '']
+              newVNCdt[UnitName == auxUnitName, IDDD := paste0('ObsErrorSTD', IDDD)]
+              newVNCdt[UnitName == auxUnitName, UnitName := paste0('ObsErrorSTD', UnitName)]
+              newVNC <- BuildVNC(list(MicroData = newVNCdt))
 
-              newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+              newDD <- DD(VNC = newVNC, MicroData = newDDdt)
               newDD <- DD + newDD
 
               newData <- output[, c(IDQuals, Var), with = FALSE]

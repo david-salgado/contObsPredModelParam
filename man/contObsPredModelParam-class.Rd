@@ -26,8 +26,7 @@ new(Class = 'contObsPredModelParam')
 
 ObsPredPar <- new(Class = 'contObsPredModelParam',
                   Data = Data,
-                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.')
-                   )
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 }
 
