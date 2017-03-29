@@ -31,7 +31,7 @@ ImpParam <- new(Class = 'MeanImputationParam',
                 DomainNames =  'Tame_05._4.')
 ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
                          RawData = FD.StQList,
-                         EdData = FG.StQList,
+                         EdData = FF.StQList,
                          VarNames = 'CifraNeg_13.___',
                          Imputation = ImpParam)
 

@@ -30,15 +30,15 @@
 #' FD <- FD.StQList[['MM112016']]
 #' rm(FD.StQList, FG.StQList, FGListofStQ)
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = FG,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+#'                   Data = FD,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._2.'))
 #' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
-#'                          RawData = FGList,
-#'                          EdData = FDList,
+#'                          RawData = FD.StQList,
+#'                          EdData = FF.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
 #' ObsPredPar <- ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
@@ -82,13 +82,14 @@ setMethod(f = "ComputeErrorProb",
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
-                localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1]
+                localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1L]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
 
               }
               return(localData.dm)
           })
+
           nPeriods <- length(PeriodList)
           ProbList.dt <- rbindlist(PeriodList)
 
@@ -124,11 +125,11 @@ setMethod(f = "ComputeErrorProb",
             newDD <- DD + newDD
 
             newData <- output[, c(IDQuals, Var), with = FALSE]
+
             setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)
             object@Data <- object@Data + newStQ
           }
-
 
           object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
 

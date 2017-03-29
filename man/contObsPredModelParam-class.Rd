@@ -25,7 +25,7 @@ new(Class = 'contObsPredModelParam')
 \dontrun{
 
 ObsPredPar <- new(Class = 'contObsPredModelParam',
-                  Data = Data,
+                  Data = FD,
                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 }

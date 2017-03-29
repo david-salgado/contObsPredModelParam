@@ -40,13 +40,28 @@ ObsPredPar <- new(Class = 'contObsPredModelParam',
 ImpParam <- new(Class = 'MeanImputationParam',
                 VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
                              'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
-                DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+                DomainNames =  c('Tame_05._2.'))
 PredlmParam <- new(Class = 'PredlmParam',
                    EdData = FD,
                    VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-                   DomainNames = 'Tame_05._4.',
+                   DomainNames = 'Tame_05._2.',
                    Imputation = ImpParam)
+TS.list <- list(Reg = list('RegDiffTSPred', forward = 2L),
+                Stat = list('StatDiffTSPred', forward = 2L),
+                StatReg = list('StatRegDiffTSPred', forward = 2L))
+VarNames <- c('CifraNeg_13.___', 'Personal_07.__2.__')
+BestTSPredParam <- new(Class='BestTSPredParam', TSPred.list = TS.list, VarNames = VarNames)
+ImpParam <- new(Class = 'MeanImputationParam',
+                VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
+                             'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
+                DomainNames =  c('Tame_05._2.'))
+PredTSParam <- new(Class = 'PredTSParam',
+                   TS = FF.StQList,
+                   Param = BestTSPredParam,
+                   Imputation = ImpParam)
+
 ObsPredPar <- ComputePred(ObsPredPar, PredlmParam)
+ObsPredPar <- ComputePred(ObsPredPar, PredTSParam)
 
 }
 }

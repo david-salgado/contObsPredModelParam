@@ -26,13 +26,28 @@
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
 #'                              'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._2.'))
 #' PredlmParam <- new(Class = 'PredlmParam',
 #'                    EdData = FD,
 #'                    VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                    DomainNames = 'Tame_05._4.',
+#'                    DomainNames = 'Tame_05._2.',
 #'                    Imputation = ImpParam)
+#' TS.list <- list(Reg = list('RegDiffTSPred', forward = 2L),
+#'                 Stat = list('StatDiffTSPred', forward = 2L),
+#'                 StatReg = list('StatRegDiffTSPred', forward = 2L))
+#' VarNames <- c('CifraNeg_13.___', 'Personal_07.__2.__')
+#' BestTSPredParam <- new(Class='BestTSPredParam', TSPred.list = TS.list, VarNames = VarNames)
+#' ImpParam <- new(Class = 'MeanImputationParam',
+#'                 VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
+#'                              'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
+#'                 DomainNames =  c('Tame_05._2.'))
+#' PredTSParam <- new(Class = 'PredTSParam',
+#'                    TS = FF.StQList,
+#'                    Param = BestTSPredParam,
+#'                    Imputation = ImpParam)
+#'
 #' ObsPredPar <- ComputePred(ObsPredPar, PredlmParam)
+#' ObsPredPar <- ComputePred(ObsPredPar, PredTSParam)
 #'
 #' }
 setGeneric("ComputePred", function(object, Param) {standardGeneric("ComputePred")})
@@ -51,47 +66,52 @@ setMethod(f = "ComputePred",
             RawData.StQ <- object@Data
             Units <- getUnits(RawData.StQ)
             IDQuals <- names(Units)
-            Variables <- Param@VarNames
-            DomainNames <- union(Param@DomainNames, Param@Imputation@DomainNames)
+            Variables <- object@VarRoles$ObjVariables
+            DomainNames <- union(object@VarRoles$DomainNames, Param@Imputation@DomainNames)
             RawData.dm <- dcast_StQ(RawData.StQ, unique(ExtractNames((c(Variables, DomainNames)))))
             RawData.dm <- RawData.dm[, c(IDQuals, Variables, DomainNames), with = FALSE]
             output <- StQPrediction::Predict(RawData.dm, Param)
+            setnames(output, paste0('STD', Variables), paste0('PredErrorSTD', Variables))
             output <- Impute(output, Param@Imputation)
 
             DD <- getDD(object@Data)
             VNC <- getVNC(DD)
+
+            auxVNCIDQual <- VNC$MicroData[IDQual %chin% IDQuals]
+            auxVNCNonIDQual <- VNC$MicroData[NonIDQual != '']
+
             VNCcols <- names(VNC$MicroData)
 
             for (Var in Variables){
 
-              localVar <- ExtractNames(Var)
+              localVar <- unique(ExtractNames(Var))
+              auxDDdt <- DD$MicroData[Variable == localVar]
               for (prefix in c('Pred', 'PredErrorSTD')){
-                auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
+
                 auxDDdt[, Variable := paste0(prefix, localVar)]
-                newDDdt <- new(Class = 'DDdt', auxDDdt)
-                localauxVNCdt <- VarNamesToDT(Var, DD)
-                localauxVNCdt[, IDDD := paste0(prefix, IDDD)]
-                for (col in names(localauxVNCdt)){ localauxVNCdt[is.na(get(col)), (col) := ''] }
-                for (idqual in IDQuals){ localauxVNCdt[, (idqual) := '.'] }
-                newCols <- setdiff(VNCcols, names(localauxVNCdt))
-                localauxVNCdt[, (newCols) := '']
-                localauxVNCdt[, UnitName := paste0(prefix, IDDDToUnitNames(Var, DD))]
-                setcolorder(localauxVNCdt, VNCcols)
-                newVNCdt <- list(MicroData = new(Class = 'VNCdt', localauxVNCdt))
-                newVNC <- BuildVNC(newVNCdt)
+                auxDDdt[, Length := '8']
 
-                newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+                auxVNCdt <- VarNamesToDT(Var, DD)
+                auxNonIDQuals <- setdiff(names(auxVNCdt), 'IDDD')
+                auxVNCdt[, IDDD := paste0(prefix, localVar)]
+                auxVNCdt[, UnitName := paste0(prefix, IDDDToUnitNames(Var, DD))]
+                auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
+                auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
+                auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
+                auxVNCdt[IDDD != '', (IDQuals) := '.']
+                for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
+                setcolorder(auxVNCdt, VNCcols)
+                newVNC <- BuildVNC(list(MicroData = auxVNCdt))
+
+                newDD <- DD(VNC = newVNC, MicroData = auxDDdt)
                 newDD <- DD + newDD
-                auxOutput <- output[, c(IDQuals, paste0(prefix, Var)), with = FALSE]
-                setnames(auxOutput, IDDDToUnitNames(names(auxOutput), newDD))
 
-                #newData <- output[, c(IDQuals, Var), with = FALSE]
-                #setnames(newData, Var, paste0(prefix, Var))
-                newStQ <- melt_StQ(auxOutput, newDD)
+                newData <- output[, c(IDQuals, paste0(c('Pred', 'PredErrorSTD'), Var)), with = FALSE]
+                #setnames(newData, Var, paste0(prefix, IDDDToUnitNames(Var, DD)))
+                newStQ <- melt_StQ(newData, newDD)
                 object@Data <- object@Data + newStQ
               }
             }
-
 
             object@VarRoles$PredValues <- c(object@VarRoles$PredValues, paste0('Pred', Variables))
             object@VarRoles$PredErrorSTD <- c(object@VarRoles$PredErrorSTD, paste0('PredErrorSTD', Variables))

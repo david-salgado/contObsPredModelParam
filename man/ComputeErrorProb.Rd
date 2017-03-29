@@ -43,15 +43,15 @@ FDList <- FD.StQList[-11]
 FD <- FD.StQList[['MM112016']]
 rm(FD.StQList, FG.StQList, FGListofStQ)
 ObsPredPar <- new(Class = 'contObsPredModelParam',
-                  Data = FG,
-                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+                  Data = FD,
+                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 ImpParam <- new(Class = 'MeanImputationParam',
                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-                DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+                DomainNames =  c('Tame_05._2.'))
 ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
-                         RawData = FGList,
-                         EdData = FDList,
+                         RawData = FD.StQList,
+                         EdData = FF.StQList,
                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
                          Imputation = ImpParam)
 ObsPredPar <- ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)

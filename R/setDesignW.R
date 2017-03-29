@@ -20,7 +20,7 @@
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
 #'                   Data = FG,
 #'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
-#' Weights <- StQ::dcast_StQ(ObsPredPar@Data)[, 'NOrden', with = FALSE][, Personal_07._2.___ := 1][, CifraNeg_13.___ := 1]
+#' Weights <- StQ::dcast_StQ(ObsPredPar@Data)[, 'NOrden', with = FALSE][, Personal_07.__2.__ := 1][, CifraNeg_13.___ := 1]
 #' setDesignW(ObsPredPar) <- Weights
 #'
 #' }
@@ -53,30 +53,37 @@ setReplaceMethod(
 
             DD <- getDD(object@Data)
             VNC <- getVNC(DD)
+
+            auxVNCIDQual <- VNC$MicroData[IDQual %chin% IDQuals]
+            auxVNCNonIDQual <- VNC$MicroData[NonIDQual != '']
+
             VNCcols <- names(VNC$MicroData)
+
             for (Var in Variables){
 
-              localVar <- ExtractNames(Var)
-              auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
+              localVar <- unique(ExtractNames(Var))
+              auxDDdt <- DD$MicroData[Variable == localVar]
+
               auxDDdt[, Variable := paste0('DesignW', localVar)]
-              newDDdt <- new(Class = 'DDdt', auxDDdt)
+              auxDDdt[, Length := '8']
 
               auxVNCdt <- VarNamesToDT(Var, DD)
+              auxNonIDQuals <- setdiff(names(auxVNCdt), 'IDDD')
               auxVNCdt[, IDDD := paste0('DesignW', IDDD)]
-              for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
-              for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
-              newCols <- setdiff(VNCcols, names(auxVNCdt))
-              auxVNCdt[, (newCols) := '']
-              auxVNCdt[, UnitName := paste0('DesignW', Var)]
+              auxVNCdt[, UnitName := paste0('DesignW', IDDDToUnitNames(Var, DD))]
+              auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
+              auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
+              auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
+              auxVNCdt[IDDD != '', (IDQuals) := '.']
+              for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
               setcolorder(auxVNCdt, VNCcols)
-              newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
-              newVNC <- BuildVNC(newVNCdt)
+              newVNC <- BuildVNC(list(MicroData = auxVNCdt))
 
-              newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+              newDD <- DD(VNC = newVNC, MicroData = auxDDdt)
               newDD <- DD + newDD
 
               newData <- value[, c(IDQuals, Var), with = FALSE]
-              setnames(newData, Var, paste0('DesignW', Var))
+              setnames(newData, Var, paste0('DesignW', IDDDToUnitNames(Var, DD)))
               newStQ <- melt_StQ(newData, newDD)
               object@Data <- object@Data + newStQ
             }

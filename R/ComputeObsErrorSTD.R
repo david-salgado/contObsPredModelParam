@@ -15,27 +15,27 @@
 #' \dontrun{
 #'
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = Data,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+#'                   Data = FD,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._2.'))
 #' ObsErrVarMLEParam <- new(Class = 'ObsErrorSTDMLEParam',
-#'                          RawData = FGList,
-#'                          EdData = FDList,
+#'                          RawData = FD.StQList,
+#'                          EdData = FF.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
 #' ObsPredPar <- ComputeObsErrorSTD(ObsPredPar, ObsErrVarMLEParam)
 #'
 #' }
-setGeneric("ComputeObsErrorSTD", function(object, Param) {standardGeneric("ComputeObsErrorSTD")})
-
-#' @rdname ComputeObsErrorSTD
-#'
 #' @include contObsPredModelParam-class.R ObsErrorSTDParam-class.R
 #'
 #' @import data.table RepoTime StQ StQImputation
+
+setGeneric("ComputeObsErrorSTD", function(object, Param) {standardGeneric("ComputeObsErrorSTD")})
+
+#' @rdname ComputeObsErrorSTD
 #'
 #' @export
 setMethod(f = "ComputeObsErrorSTD",
@@ -54,6 +54,7 @@ setMethod(f = "ComputeObsErrorSTD",
               stop('[contObsPredModelParam: validity] No common time periods between RawData and EdData.')
 
             }
+            Variables <- Param@VarNames
             Variables <- Param@VarNames
             PeriodList <- lapply(CommonPeriods, function(Period){
 
@@ -81,7 +82,7 @@ setMethod(f = "ComputeObsErrorSTD",
 
             output <- lapply(Variables, function(Var){
 
-              localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / sum(get(paste0('NumError.', Var)), na.rm = TRUE), by = IDQuals]
+              localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / (sum(get(paste0('NumError.', Var)), na.rm = TRUE) - 1), by = IDQuals]
               setnames(localOutput, 'V1', Var)
               localOutput[is.nan(get(Var)), (Var) := 0]
               localOutput[, (Var) := sqrt(get(Var))]
@@ -115,11 +116,17 @@ setMethod(f = "ComputeObsErrorSTD",
               newData <- output[, c(IDQuals, Var), with = FALSE]
               setnames(newData, Var, paste0('ObsErrorSTD', IDDDToUnitNames(Var, DD)))
               newStQ <- melt_StQ(newData, newDD)
+
               object@Data <- object@Data + newStQ
             }
 
             object@VarRoles$ObsErrorSTD <- c(object@VarRoles$ObsErrorSTD, paste0('ObsErrorSTD', Variables))
 
+            if (length(object@VarRoles[['ObjVariables']]) == 0) {
+
+              object@VarRoles[['ObjVariables']] <- Param@VarNames
+
+            }
 
             return(object)
 
