@@ -3,13 +3,13 @@
 \docType{methods}
 \name{ComputePred}
 \alias{ComputePred}
-\alias{ComputePred,contObsPredModelParam,PredParam-method}
+\alias{ComputePred,contObsPredModelParam,PredValueTSParam-method}
 \title{\code{ComputePred} computes the predicted values and the prediction error std for each
 statistical unit}
 \usage{
 ComputePred(object, Param)
 
-\S4method{ComputePred}{contObsPredModelParam,PredParam}(object, Param)
+\S4method{ComputePred}{contObsPredModelParam,PredValueTSParam}(object, Param)
 }
 \arguments{
 \item{object}{Object of class \linkS4class{contObsPredModelParam} containing the statistical

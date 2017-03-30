@@ -54,60 +54,53 @@ setGeneric("ComputePred", function(object, Param) {standardGeneric("ComputePred"
 
 #' @rdname ComputePred
 #'
-#' @include contObsPredModelParam-class.R
+#' @include contObsPredModelParam-class.R PredValueParam-class.R
 #'
 #' @import data.table RepoTime StQ StQImputation StQPrediction
 #'
 #' @export
 setMethod(f = "ComputePred",
-          signature = c("contObsPredModelParam", "PredParam"),
+          signature = c("contObsPredModelParam", "PredValueTSParam"),
           function(object, Param){
 
             RawData.StQ <- object@Data
             Units <- getUnits(RawData.StQ)
             IDQuals <- names(Units)
             Variables <- object@VarRoles$ObjVariables
-            DomainNames <- union(object@VarRoles$DomainNames, Param@Imputation@DomainNames)
+            DomainNames <- Param@ImputationParam@DomainNames
             RawData.dm <- dcast_StQ(RawData.StQ, unique(ExtractNames((c(Variables, DomainNames)))))
             RawData.dm <- RawData.dm[, c(IDQuals, Variables, DomainNames), with = FALSE]
-            output <- StQPrediction::Predict(RawData.dm, Param)
+            PredParam <- Param@PredictionParam
+            output <- StQPrediction::Predict(RawData.dm, PredParam)
             setnames(output, paste0('STD', Variables), paste0('PredErrorSTD', Variables))
-            output <- Impute(output, Param@Imputation)
+            PredVariables <- paste0('Pred', Param@ImputationParam@VarNames)
+            ErrorSTDVariables <- paste0('PredErrorSTD', Param@ImputationParam@VarNames)
+            ImpParam <- Param@ImputationParam
+            ImpParam@VarNames <- c(PredVariables, ErrorSTDVariables)
+            output <- merge(output, RawData.dm[, c(IDQuals, DomainNames), with = FALSE], all.x = TRUE, by = IDQuals)
+            output <- Impute(output, ImpParam)
 
             DD <- getDD(object@Data)
             VNC <- getVNC(DD)
-
-            auxVNCIDQual <- VNC$MicroData[IDQual %chin% IDQuals]
-            auxVNCNonIDQual <- VNC$MicroData[NonIDQual != '']
-
-            VNCcols <- names(VNC$MicroData)
-
             for (Var in Variables){
 
               localVar <- unique(ExtractNames(Var))
-              auxDDdt <- DD$MicroData[Variable == localVar]
+              newDDdt <- DD$MicroData[Variable == localVar]
               for (prefix in c('Pred', 'PredErrorSTD')){
 
-                auxDDdt[, Variable := paste0(prefix, localVar)]
-                auxDDdt[, Length := '8']
+                newDDdt[, Variable := paste0(prefix, localVar)]
 
-                auxVNCdt <- VarNamesToDT(Var, DD)
-                auxNonIDQuals <- setdiff(names(auxVNCdt), 'IDDD')
-                auxVNCdt[, IDDD := paste0(prefix, localVar)]
-                auxVNCdt[, UnitName := paste0(prefix, IDDDToUnitNames(Var, DD))]
-                auxNonIDQualdt <- auxVNCNonIDQual[, c('NonIDQual', auxNonIDQuals), with = FALSE]
-                auxVNCdt <- rbindlist(list(auxVNCdt, auxNonIDQualdt), fill = TRUE)
-                auxVNCdt <- rbindlist(list(auxVNCdt, auxVNCIDQual), fill = TRUE)
-                auxVNCdt[IDDD != '', (IDQuals) := '.']
-                for (col in names(auxVNCdt)) { auxVNCdt[is.na(get(col)), (col) := ''] }
-                setcolorder(auxVNCdt, VNCcols)
-                newVNC <- BuildVNC(list(MicroData = auxVNCdt))
+                auxUnitName <- IDDDToUnitNames(Var, DD)
+                newVNCdt <- VNC$MicroData[UnitName == auxUnitName | IDQual != '' | NonIDQual != '']
+                newVNCdt[UnitName == auxUnitName, IDDD := paste0(prefix, IDDD)]
+                newVNCdt[UnitName == auxUnitName, UnitName := paste0(prefix, UnitName)]
+                newVNC <- BuildVNC(list(MicroData = newVNCdt))
 
-                newDD <- DD(VNC = newVNC, MicroData = auxDDdt)
+                newDD <- DD(VNC = newVNC, MicroData = newDDdt)
                 newDD <- DD + newDD
 
                 newData <- output[, c(IDQuals, paste0(c('Pred', 'PredErrorSTD'), Var)), with = FALSE]
-                #setnames(newData, Var, paste0(prefix, IDDDToUnitNames(Var, DD)))
+
                 newStQ <- melt_StQ(newData, newDD)
                 object@Data <- object@Data + newStQ
               }
