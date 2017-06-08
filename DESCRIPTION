@@ -23,8 +23,8 @@ Imports:
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 5.0.1
-Collate:
+RoxygenNote: 6.0.1
+Collate: 
     'ErrorProbMLEParam-class.R'
     'ErrorProbParam-class.R'
     'contObsPredModelParam-class.R'
@@ -35,4 +35,24 @@ Collate:
     'PredValueTSParam-class.R'
     'PredValueParam-class.R'
     'ComputePred.R'
+    'getData.R'
+    'getDomainNames.R'
+    'getEdData.R'
+    'getErrorProb.R'
+    'getImputation.R'
+    'getImputationParam.R'
+    'getObjVariables.R'
+    'getObsErrorSTD.R'
+    'getPredErrorSTD.R'
+    'getPredValues.R'
+    'getPredictionParam.R'
+    'getRawData.R'
+    'getVarNames.R'
+    'getVarRoles.R'
+    'setData.R'
     'setDesignW.R'
+    'setErrorProb.R'
+    'setObjVariables.R'
+    'setPredErrorSTD.R'
+    'setPredValues.R'
+    'setobsErrorSTD.R'

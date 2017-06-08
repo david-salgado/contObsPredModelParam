@@ -18,6 +18,7 @@ a continuous observation-prediction model in the optimization approach to select
 \code{ErrorProb} being character vectors containing the column names according to their
 respective role in the model.}
 }}
+
 \examples{
 # An empty contObsPredModelParam object:
 new(Class = 'contObsPredModelParam')
@@ -31,4 +32,3 @@ ObsPredPar <- new(Class = 'contObsPredModelParam',
 }
 
 }
-

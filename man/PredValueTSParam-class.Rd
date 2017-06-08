@@ -21,6 +21,7 @@ be computed.}
 \item{\code{Imputation}}{\linkS4class{ImputationParam} object with the parameters to imputed missing
 values during the computation of the error probabilities.}
 }}
+
 \examples{
 # An empty contObsPredModelParam object:
 new(Class = 'ErrorProbMLEParam')
@@ -39,4 +40,3 @@ ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
 }
 
 }
-

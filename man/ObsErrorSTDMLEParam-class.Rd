@@ -21,6 +21,7 @@ be computed.}
 \item{\code{Imputation}}{\linkS4class{ImputationParam} object with the parameters to imputed missing
 values during the computation of the error probabilities.}
 }}
+
 \examples{
 # An empty ObsErrorSTDMLEParam object:
 new(Class = 'ObsErrorSTDMLEParam')
@@ -39,4 +40,3 @@ ObsErrorSTDMLEParam <- new(Class = 'ObsErrorSTDMLEParam',
 }
 
 }
-

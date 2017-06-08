@@ -3,4 +3,3 @@
 \name{PredValueParam}
 \alias{PredValueParam}
 \title{Virtual S4 class to handle parameters for the computation of predicted values}
-

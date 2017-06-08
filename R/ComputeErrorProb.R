@@ -57,12 +57,12 @@ setMethod(f = "ComputeErrorProb",
           signature = c("contObsPredModelParam", "ErrorProbParam"),
           function(object, Param){
 
-          RawPeriods <- getPeriods(Param@RawData)
-          EdPeriods <- getPeriods(Param@EdData)
+          RawPeriods <- getPeriods(getRawData(Param))
+          EdPeriods <- getPeriods(getEdData(Param))
           CommonPeriods <- intersect(EdPeriods, RawPeriods)
-          RawData <- subPeriods(Param@RawData, CommonPeriods)
-          EdData <- subPeriods(Param@EdData, CommonPeriods)
-          Units <- getUnits(object@Data)
+          RawData <- subPeriods(getRawData(Param), CommonPeriods)
+          EdData <- subPeriods(getEdData(Param), CommonPeriods)
+          Units <- getUnits(getData(object))
           IDQuals <- names(Units)
           if (length(CommonPeriods) == 0) {
 
@@ -70,7 +70,7 @@ setMethod(f = "ComputeErrorProb",
 
           }
 
-          Variables <- Param@VarNames
+          Variables <- getVarNames(Param)
           PeriodList <- lapply(CommonPeriods, function(Period){
 
               localVariables <- ExtractNames(Variables)
@@ -102,12 +102,12 @@ setMethod(f = "ComputeErrorProb",
           })
           output <- Reduce(function(x, y){merge(x, y, by = intersect(names(x), names(y)))}, output, init = output[[1]])
 
-          DomainNames <- Param@Imputation@DomainNames
-          Domains <- dcast_StQ(object@Data, ExtractNames(DomainNames))
+          DomainNames <- getDomainNames(Param)
+          Domains <- dcast_StQ(getData(object), ExtractNames(DomainNames))
           output <- merge(output, Domains, by = IDQuals, all.x = TRUE)
-          output <- Impute(output, Param@Imputation)
+          output <- Impute(output, getImputation(Param))
 
-          DD <- getDD(object@Data)
+          DD <- getDD(getData(object))
           VNC <- getVNC(DD)
           for (Var in Variables){
 
@@ -128,14 +128,14 @@ setMethod(f = "ComputeErrorProb",
 
             setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)
-            object@Data <- object@Data + newStQ
+            setData(object) <- getData(object) + newStQ
           }
 
-          object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
+          setErrorProb(object) <- c(getErrorProb(object), paste0('ErrorProb', Variables))
 
-          if (length(object@VarRoles[['ObjVariables']]) == 0) {
+          if (length(getObjVariables(object)) == 0) {
 
-            object@VarRoles[['ObjVariables']] <- Param@VarNames
+            setObjVariables(object)<- getVarNames(Param)
 
           }
 

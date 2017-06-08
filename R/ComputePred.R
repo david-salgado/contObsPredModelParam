@@ -63,24 +63,24 @@ setMethod(f = "ComputePred",
           signature = c("contObsPredModelParam", "PredValueTSParam"),
           function(object, Param){
 
-            RawData.StQ <- object@Data
+            RawData.StQ <- getData(object)
             Units <- getUnits(RawData.StQ)
             IDQuals <- names(Units)
-            Variables <- object@VarRoles$ObjVariables
-            DomainNames <- Param@ImputationParam@DomainNames
+            Variables <- getObjVariables(object)
+            DomainNames <- getDomainNames(Param)
             RawData.dm <- dcast_StQ(RawData.StQ, unique(ExtractNames((c(Variables, DomainNames)))))
             RawData.dm <- RawData.dm[, c(IDQuals, Variables, DomainNames), with = FALSE]
-            PredParam <- Param@PredictionParam
+            PredParam <- getPredictionParam(Param)
             output <- StQPrediction::Predict(RawData.dm, PredParam)
             setnames(output, paste0('STD', Variables), paste0('PredErrorSTD', Variables))
-            PredVariables <- paste0('Pred', Param@ImputationParam@VarNames)
-            ErrorSTDVariables <- paste0('PredErrorSTD', Param@ImputationParam@VarNames)
-            ImpParam <- Param@ImputationParam
-            ImpParam@VarNames <- c(PredVariables, ErrorSTDVariables)
+            PredVariables <- paste0('Pred', getVarNames(Param))
+            ErrorSTDVariables <- paste0('PredErrorSTD', getVarNames(Param))
+            ImpParam <- getImputationParam(Param)
+            setVarNames(ImpParam) <- c(PredVariables, ErrorSTDVariables)
             output <- merge(output, RawData.dm[, c(IDQuals, DomainNames), with = FALSE], all.x = TRUE, by = IDQuals)
             output <- Impute(output, ImpParam)
 
-            DD <- getDD(object@Data)
+            DD <- getDD(getData(object))
             VNC <- getVNC(DD)
             for (Var in Variables){
 
@@ -102,12 +102,12 @@ setMethod(f = "ComputePred",
                 newData <- output[, c(IDQuals, paste0(c('Pred', 'PredErrorSTD'), Var)), with = FALSE]
 
                 newStQ <- melt_StQ(newData, newDD)
-                object@Data <- object@Data + newStQ
+                setData(object)<- getData(object) + newStQ
               }
             }
 
-            object@VarRoles$PredValues <- c(object@VarRoles$PredValues, paste0('Pred', Variables))
-            object@VarRoles$PredErrorSTD <- c(object@VarRoles$PredErrorSTD, paste0('PredErrorSTD', Variables))
+            setPredValues(object) <- c(getPredValues(object), paste0('Pred', Variables))
+            setPredErrorSTD(object)<- c(getPredErrorSTD(object), paste0('PredErrorSTD', Variables))
 
 
             return(object)
