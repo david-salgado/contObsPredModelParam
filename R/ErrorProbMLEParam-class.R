@@ -24,7 +24,7 @@
 #'                 DomainNames =  'Tame_05._4.')
 #' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
 #'                          RawData = FD.StQList,
-#'                          EdData = FG.StQList,
+#'                          EdData = FF.StQList,
 #'                          VarNames = 'CifraNeg_13.___',
 #'                          Imputation = ImpParam)
 #'
@@ -39,8 +39,8 @@ setClass(Class = "ErrorProbMLEParam",
                    EdData = 'StQList',
                    VarNames = 'character',
                    Imputation = 'ImputationParam'),
-         prototype = list(RawData = new(Class = 'StQList'),
-                          EdData = new(Class = 'StQList'),
+         prototype = list(RawData = StQList(),
+                          EdData = StQList(),
                           VarNames = character(0),
                           Imputation = new(Class = 'MeanImputationParam')),
          validity = function(object){

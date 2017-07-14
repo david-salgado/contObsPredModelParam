@@ -30,15 +30,15 @@
 #' FD <- FD.StQList[['MM112016']]
 #' rm(FD.StQList, FG.StQList, FGListofStQ)
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
-#'                   Data = FG,
-#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._4.'))
+#'                   Data = FD,
+#'                   VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 #'
 #' ImpParam <- new(Class = 'MeanImputationParam',
 #'                 VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-#'                 DomainNames =  c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0'))
+#'                 DomainNames =  c('Tame_05._2.'))
 #' ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
-#'                          RawData = FGList,
-#'                          EdData = FDList,
+#'                          RawData = FD.StQList,
+#'                          EdData = FF.StQList,
 #'                          VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
 #'                          Imputation = ImpParam)
 #' ObsPredPar <- ComputeErrorProb(ObsPredPar, ErrorProbMLEParam)
@@ -57,12 +57,12 @@ setMethod(f = "ComputeErrorProb",
           signature = c("contObsPredModelParam", "ErrorProbParam"),
           function(object, Param){
 
-          RawPeriods <- getPeriods(Param@RawData)
-          EdPeriods <- getPeriods(Param@EdData)
+          RawPeriods <- getPeriods(getRawData(Param))
+          EdPeriods <- getPeriods(getEdData(Param))
           CommonPeriods <- intersect(EdPeriods, RawPeriods)
-          RawData <- Param@RawData[CommonPeriods]
-          EdData <- Param@EdData[CommonPeriods]
-          Units <- getUnits(object@Data)
+          RawData <- subPeriods(getRawData(Param), CommonPeriods)
+          EdData <- subPeriods(getEdData(Param), CommonPeriods)
+          Units <- getUnits(getData(object))
           IDQuals <- names(Units)
           if (length(CommonPeriods) == 0) {
 
@@ -70,7 +70,7 @@ setMethod(f = "ComputeErrorProb",
 
           }
 
-          Variables <- Param@VarNames
+          Variables <- getVarNames(Param)
           PeriodList <- lapply(CommonPeriods, function(Period){
 
               localVariables <- ExtractNames(Variables)
@@ -82,13 +82,14 @@ setMethod(f = "ComputeErrorProb",
               for (Var in Variables){
 
                 localData.dm[, Period := Period]
-                localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1]
+                localData.dm[, (paste0('Unit.p.', Var)) := (get(paste0(Var, '.x')) != get(paste0(Var, '.y'))) * 1L]
                 localData.dm[, (paste0(Var, '.x')) := NULL]
                 localData.dm[, (paste0(Var, '.y')) := NULL]
 
               }
               return(localData.dm)
           })
+
           nPeriods <- length(PeriodList)
           ProbList.dt <- rbindlist(PeriodList)
 
@@ -101,59 +102,40 @@ setMethod(f = "ComputeErrorProb",
           })
           output <- Reduce(function(x, y){merge(x, y, by = intersect(names(x), names(y)))}, output, init = output[[1]])
 
-          DomainNames <- Param@Imputation@DomainNames
-          Domains <- dcast_StQ(object@Data, ExtractNames(DomainNames))
+          DomainNames <- getDomainNames(Param)
+          Domains <- dcast_StQ(getData(object), ExtractNames(DomainNames))
           output <- merge(output, Domains, by = IDQuals, all.x = TRUE)
-          output <- Impute(output, Param@Imputation)
+          output <- Impute(output, getImputation(Param))
 
-          DD <- getDD(object@Data)
+          DD <- getDD(getData(object))
           VNC <- getVNC(DD)
-          VNCcols <- names(VNC$MicroData)
-
           for (Var in Variables){
 
-            localVar <- unique(ExtractNames(Var))
-            auxDDdt <- DatadtToDT(DD@MicroData)[Variable == localVar]
-            auxDDdt[, Variable := paste0('ErrorProb', localVar)]
-            auxDDdt[, Length := '8']
-            newDDdt <- new(Class = 'DDdt', auxDDdt)
+            localVar <- ExtractNames(Var)
+            newDDdt <- DD$MicroData[Variable == localVar]
+            newDDdt[, Variable := paste0('ErrorProb', localVar)]
 
-            auxVNCdt <- VarNamesToDT(Var, DD)
-            auxVNCdt[, IDDD := paste0('ErrorProb', IDDD)]
-            for (col in names(auxVNCdt)){ auxVNCdt[is.na(get(col)), (col) := ''] }
-            for (idqual in IDQuals){ auxVNCdt[, (idqual) := '.'] }
-            newCols <- setdiff(VNCcols, names(auxVNCdt))
-            auxVNCdt[, (newCols) := '']
-            auxVNCdt[, UnitName := paste0('ErrorProb', IDDDToUnitNames(Var, DD))]
-            setcolorder(auxVNCdt, VNCcols)
-            newVNCdt <- list(MicroData = new(Class = 'VNCdt', auxVNCdt))
-            newVNC <- BuildVNC(newVNCdt)
+            auxUnitName <- IDDDToUnitNames(Var, DD)
+            newVNCdt <- VNC$MicroData[UnitName == auxUnitName | IDQual != '' | NonIDQual != '']
+            newVNCdt[UnitName == auxUnitName, IDDD := paste0('ErrorProb', IDDD)]
+            newVNCdt[UnitName == auxUnitName, UnitName := paste0('ErrorProb', UnitName)]
+            newVNC <- BuildVNC(list(MicroData = newVNCdt))
 
-            newDD <- new(Class = 'DD', VarNameCorresp = newVNC, MicroData = newDDdt)
+            newDD <- DD(VNC = newVNC, MicroData = newDDdt)
             newDD <- DD + newDD
 
-            #if (localVar %in% getIDDD(newDD)) {
-
-            #  UnitVar <- IDDDToUnitNames(Var, newDD)
-            #  setnames(output, Var, UnitVar)
-
-            #} else {
-
-            #  UnitVar <- localVar
-
-            #}
             newData <- output[, c(IDQuals, Var), with = FALSE]
+
             setnames(newData, Var, paste0('ErrorProb', IDDDToUnitNames(Var, DD)))
             newStQ <- melt_StQ(newData, newDD)
-            object@Data <- object@Data + newStQ
+            setData(object) <- getData(object) + newStQ
           }
 
+          setErrorProb(object) <- c(getErrorProb(object), paste0('ErrorProb', Variables))
 
-          object@VarRoles$ErrorProb <- c(object@VarRoles$ErrorProb, paste0('ErrorProb', Variables))
+          if (length(getObjVariables(object)) == 0) {
 
-          if (length(object@VarRoles[['ObjVariables']]) == 0) {
-
-            object@VarRoles[['ObjVariables']] <- Param@VarNames
+            setObjVariables(object)<- getVarNames(Param)
 
           }
 
