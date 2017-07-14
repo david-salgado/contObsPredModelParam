@@ -18,6 +18,8 @@
 #' library(xlsx)
 #' library(StQ)
 #' library(RepoReadWrite)
+#' library(StQImputation)
+#' library(StQPrediction)
 #' DD <- RepoXLSToDD('S:/E30183/E30183.NombresVariables_V1.xlsx')
 #' FD <- ReadRepoFile('S:/E30183/E30183.FD_V1.MM032016.P_1', DD, perl = TRUE)
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
