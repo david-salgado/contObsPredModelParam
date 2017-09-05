@@ -49,6 +49,7 @@ Collate:
     'getRawData.R'
     'getVarNames.R'
     'getVarRoles.R'
+    'plot.ObsPredPar.R'
     'setData.R'
     'setDesignW.R'
     'setErrorProb.R'
