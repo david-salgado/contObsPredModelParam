@@ -84,6 +84,7 @@ setMethod(f = "ComputeObsErrorSTD",
 
               localOutput <- ProbList.dt[, sum(get(paste0('ObsError.', Var)), na.rm = TRUE) / (sum(get(paste0('NumError.', Var)), na.rm = TRUE) - 1), by = IDQuals]
               setnames(localOutput, 'V1', Var)
+              localOutput[is.infinite(get(Var)), (Var) := NA_real_]
               localOutput[is.nan(get(Var)), (Var) := 0]
               localOutput[, (Var) := sqrt(get(Var))]
               return(localOutput)
