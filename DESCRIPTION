@@ -2,7 +2,7 @@ Package: contObsPredModelParam
 Type: Package
 Title: Class and methods for the parameters of a continuous observation-
     prediction model
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person("David", "Salgado", email = "david.salgado.fernandez@gmail.com", role = c("cre", "aut")),
     person("Elisa", "Esteban", email = "elisa.esteban.segurado@gmail.com", role = "aut"),
@@ -49,6 +49,7 @@ Collate:
     'getRawData.R'
     'getVarNames.R'
     'getVarRoles.R'
+    'plot.ObsPredPar.R'
     'setData.R'
     'setDesignW.R'
     'setErrorProb.R'

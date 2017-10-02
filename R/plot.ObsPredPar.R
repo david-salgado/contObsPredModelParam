@@ -1,24 +1,25 @@
-#' @title Plot a summary of the selection of units in the optimization approach to selective editing.
+#' @title Plot the main values in the optimization approach to selective editing for the specified
+#' units.
 #'
 #' @description This method overloads the plot function to draw a picture with the information about
-#' the selection of influential statistical units in the optimization approach to selective editing.
+#' the queried units in the optimization approach to selective editing.
 #'
-#' @param x Object of class \linkS4class{AllocatedUnits}.
+#' @param x Object of class \linkS4class{contObsPredModelParam}.
 #'
-#' @param y Charactec vector with the names of the variable names roots.
+#' @param y Charactec vector with the names of the variable names.
 #'
 #' @param ... Arguments to be passed to methods, especially including
 #'
 #' \itemize{
 #'
-#'  \item \code{Query} as a \linkS4class{data.table} with the values of either the identification
-#'  variables of the queried statistical units or the domain variables of queried sample domain;
+#'  \item \code{Query} as a \linkS4class{data.table} with the values of the identification
+#'  variables of the queried statistical units;
 #'
-#'  \item \code{ModelParam} as a \linkS4class{data.table} with the parameters of the
-#'  observation-prediction model;
+#'  \item \code{FT} as a \linkS4class{StQ} object with the values of the selected units in the
+#'  optimization approach to selective editing;
 #'
-#'  \item \code{UnitParam} as a \linkS4class{data.table} with the parameters of each statistical
-#'  unit (sampling weights and unit scores).
+#'  \item \code{ErrorMoments} as a \code{numeric} vector with the error moments corresponding to
+#'  queried units;
 #'}
 #'
 #' @return Returns an invisible \code{NULL} plotting the one scatterplot per variable.
@@ -27,14 +28,14 @@
 #'
 #' @rdname plot
 #'
-#' @import data.table SelEditUnitPriorit ggplot2
+#' @import data.table ggplot2
 #'
 #'
 #' @export
 setMethod(f = "plot",
           signature = c("contObsPredModelParam", "character"),
           function(x, y, ...) {
-            
+
             VarRoles <- x@VarRoles
             IDQual <- VarRoles$Units
             VarNames <- VarRoles$ObjVariables
@@ -44,11 +45,42 @@ setMethod(f = "plot",
             predValuesNames <- VarRoles$PredValues
             nuNames <- VarRoles$PredErrorSTD
             wNames <- VarRoles$DesignW
-            
+
+            nVar <- length(y)
+            if (nVar > 4) stop('[contObsPredModelParam::plot] At most 4 variables can be plotted.\n')
+
+            if (!all(y %in% VarNames)) stop('[contObsPredModelParam::plot] Some variables of y are not in the input object.\n')
+            VarNames <- y
+            names.list <- list(sigmaNames = sigmaNames, errorProbNames = errorProbNames,
+                               predValuesNames = predValuesNames, nuNames = nuNames, wNames = wNames)
+
+            namesQueried <- lapply(names.list, function(names){
+
+              out <- list()
+              for (Var in VarNames){
+
+                out[[Var]] <- names[grep(Var, names)]
+              }
+
+              out <- unlist(out)
+
+            })
+
+            sigmaNames <- namesQueried[['sigmaNames']]
+            errorProbNames <- namesQueried[['errorProbNames']]
+            predValuesNames <- namesQueried[['predValuesNames']]
+            nuNames <- namesQueried[['nuNames']]
+            wNames <- namesQueried[['wNames']]
+
+
             ExtraPar <- list(...)
             if (!'Query' %in% names(ExtraPar)) stop('[contObsPredModelParam::plot] Query is a compulsory parameter.\n')
+            if (!'FT' %in% names(ExtraPar)) stop('[contObsPredModelParam::plot] FT is a compulsory parameter.\n')
+            if (!'ErrorMoments' %in% names(ExtraPar)) stop('[contObsPredModelParam::plot] ErrorMoments is a compulsory parameter.\n')
+
             if (!all(IDQual %in% names(ExtraPar$Query))) stop('[contObsPredModelParam::plot] Query does not have correct names.\n')
-            
+            if (length(ExtraPar$ErrorMoments) != nVar * dim(ExtraPar$Query)[1]) stop('[contObsPredModelParam::plot] ErrorMoments does not have correct length.\n')
+
             ObsPredPar.dm <- dcast_StQ(getData(x))[, unlist(VarRoles), with = FALSE]
             setkeyv(ExtraPar$Query, IDQual)
             setkeyv(ObsPredPar.dm, IDQual)
@@ -56,173 +88,141 @@ setMethod(f = "plot",
             QueriedDomain <- QueriedDomain[!duplicated(QueriedDomain)]
             if (dim(QueriedDomain)[1] > 1) stop('[contObsPredModelParam::plot] Query contains units from more than one domain.\n')
             setkeyv(ObsPredPar.dm, names(QueriedDomain))
-            ModelParam <- ObsPredPar.dm[QueriedDomain][, c(IDQual, VarNames, predValuesNames, nuNames, sigmaNames), with = FALSE]
-return(ModelParam)            
-            
-            
-            if (!'ModelParam' %in% names(ExtraPar)) stop('[SelEditUnitAllocation::plot] ModelParam is a compulsory parameter.\n')
-            if (!'UnitParam' %in% names(ExtraPar)) stop('[SelEditUnitAllocation::plot] UnitParam is a compulsory parameter.\n')
-            
-            IDQual <- names(x@Units[[1]])
-            DomainNames <- names(x@Domains)
-            
-            if (all(IDQual %in% names(ExtraPar$Query))) {
-              
-              
-              InDomainQuer <- unlist(lapply(x@Units, function(DT){
-                
-                auxDT <- merge(DT, ExtraPar$Query, by = IDQual)
-                
-                if (dim(auxDT)[1] > 0) {
-                  
-                  return(TRUE)
-                  
-                } else {
-                  
-                  return(FALSE)
-                }
-              }))
-              
-              #if (sum(InDomain) == 0) stop('[SelEditUnitAllocation::plot] The statistical unit(s) specified in Query not present in x (AllocatedUnits).\n')
-              if (sum(InDomainQuer) > 1)  stop('[SelEditUnitAllocation::plot] The statistical unit(s) specified in Query must belong to a single sample domain in x (AllocatedUnits).\n')
-              QueriedDomain <- merge(ExtraPar$UnitParam, ExtraPar$Query, by = IDQual)[, DomainNames, with = FALSE]
-              setkeyv(QueriedDomain, DomainNames)
-              QueriedDomain <- QueriedDomain[!duplicated(QueriedDomain)]
-              InDomainSel <- unlist(lapply(seq(along = x@Units), function(index){
-                
-                auxDT <- merge(x@Domains[index], QueriedDomain, by = DomainNames)
-                
-                if (dim(auxDT)[1] > 0) {
-                  
-                  return(TRUE)
-                  
-                } else {
-                  
-                  return(FALSE)
-                }
-              }))
-              
-              SelectedUnits <- copy(x@Units)[[which(InDomainSel)]]
-              setkeyv(SelectedUnits, IDQual)
-              
-              
-              
-              nVar <- length(y)
-              if (nVar > 4) stop('[SelEditUnitAllocation::plot] At most 4 variables can be plotted.\n')
-              Data <- ExtraPar$ModelParam[IDEdit %in% y]
-              Data <- merge(Data, ExtraPar$UnitParam, all.x = TRUE, by = IDQual)
-              setkeyv(Data, DomainNames)
-              Data <- Data[QueriedDomain]
-              SelectedUnits[, Flagged := 1]
-              Data <- merge(Data, SelectedUnits, all.x = TRUE, by = IDQual)
-              Data[is.na(Flagged), Flagged := 0]
-              Data[, Flagged := factor(Flagged, levels = c(1, 0), labels = c('Selected', 'Not Selected'))]
-              ExtraPar$Query[, Queried := 10]
-              Data <- merge(Data, ExtraPar$Query, by = IDQual, all.x = TRUE)
-              Data[is.na(Queried), Queried := 7]
-              Data[, Queried := factor(Queried, levels = c(10, 7), labels = c('Queried', 'Not Queried'))]
-              setnames(Data, 'QuantileDesignW', 'QuantileSamplingWeight')
-              
-              out.graph <- ggplot(Data, aes(x = Var, y = PredValues)) +
-                geom_errorbar(aes(ymin = PredValues - PredErrorSTD, ymax = PredValues + PredErrorSTD), width = .1) +
-                geom_point(aes(size = QuantileSamplingWeight, colour = Flagged, shape = Queried)) +
-                scale_shape_discrete(solid = FALSE) +#values = Data$Shape) +
-                scale_colour_brewer(palette = "Set1") +
-                labs(size = expression(c[omega])) +
-                xlab('Raw values') +
-                ylab('Predicted values') +
-                geom_abline(intercept = 0, slope = 1) +
-                geom_blank(data = Data, aes(x = Var, y = PredValues)) +
-                facet_wrap( ~ IDEdit, ncol = nVar, scales = 'free') +
-                theme(plot.title = element_text(size = rel(1.5), lineheight = 1.5, face = 'bold', colour = 'black'),
-                      panel.background = element_rect(fill = "white"))
-              
-              Data <- Data[Queried == 'Queried']
-              Data <- Data[, c(IDQual, DomainNames, 'IDEdit', 'QuantileErrorMoment', 'QuantileSamplingWeight', 'QuantileGlobalScore'), with = FALSE]
-              Data <- as.data.frame(Data)
-              names(Data) <- c(IDQual, DomainNames, 'IDEdit', expression(c[M[kk]]), expression(c[omega[k]]), expression(S[k]))
-              tblData <- gridExtra::tableGrob(Data, rows = NULL, theme = gridExtra::ttheme_default(base_size = 9, colhead = list(fg_params = list(parse=TRUE))))
-              gridExtra::grid.arrange(out.graph, tblData,
-                                      nrow = 2,
-                                      as.table = TRUE,
-                                      heights = c(3, 1))
-              return(invisible(NULL))
+            ModelParam <- ObsPredPar.dm[QueriedDomain][, c(IDQual, VarNames, wNames, predValuesNames, nuNames, sigmaNames), with = FALSE]
+
+            # data.table con los cuantiles de los pesos de muestreo
+            SamplingWeight.aux <- ModelParam[, wNames, with = FALSE]
+            SamplingWeight <- lapply(names(SamplingWeight.aux), function(Var){
+
+              QuantileSamplingWeight <- ecdf(SamplingWeight.aux[[Var]])(SamplingWeight.aux[[Var]])
+              out <- cbind(ExtraPar$Query, QuantileSamplingWeight)
+              out[, variable := strsplit(Var, 'DesignW')[[1]][2]]
+              return(out)
+
+            })
+            SamplingWeight.dt <- rbindlist(SamplingWeight)
+
+            # data.tables con los valores RawVar, PredValues, PredErrorSTD y ObsErrorSTD
+            ModelParam.melt <- melt(ModelParam)
+            RawVar <- ModelParam.melt[variable %in% VarNames][, c(IDQual, 'variable', 'value'), with = FALSE]
+            setnames(RawVar, 'value', 'RawValues')
+            PredValues <- ModelParam.melt[variable %in% predValuesNames][, c(IDQual, 'variable', 'value'), with = FALSE]
+            PredValues <- lapply(VarNames, function(Var){
+
+              rows <- grep(Var, PredValues[['variable']])
+              out <- PredValues[rows][, variable := Var]
+              return(out)
+
+            })
+            PredValues <- rbindlist(PredValues)
+            setnames(PredValues, 'value', 'PredValues')
+            PredErrorSTD <- ModelParam.melt[variable %in% nuNames][, c(IDQual, 'variable', 'value'), with = FALSE]
+            PredErrorSTD <- lapply(VarNames, function(Var){
+
+              rows <- grep(Var, PredErrorSTD[['variable']])
+              out <- PredErrorSTD[rows][, variable := Var]
+              return(out)
+
+            })
+            PredErrorSTD <- rbindlist(PredErrorSTD)
+            setnames(PredErrorSTD, 'value', 'PredErrorSTD')
+            ObsErrorSTD <- ModelParam.melt[variable %in% sigmaNames][, c(IDQual, 'variable', 'value'), with = FALSE]
+            ObsErrorSTD <- lapply(VarNames, function(Var){
+
+              rows <- grep(Var, ObsErrorSTD[['variable']])
+              out <- ObsErrorSTD[rows][, variable := Var]
+              return(out)
+
+            })
+            ObsErrorSTD <- rbindlist(ObsErrorSTD)
+            setnames(ObsErrorSTD, 'value', 'ObsErrorSTD')
+
+            # Obtenemos el data.table ModelParam que contiene todos los valores de los data.tables anteriores
+            ModelParam.melt <- list(SamplingWeight.dt, RawVar, PredValues, PredErrorSTD, ObsErrorSTD)
+            ModelParam <- Reduce(merge, ModelParam.melt)
+
+            # Añadimos a ModelParam las columnas Flagged y Queried y las correspondientes a DomainNames
+            FT <- ExtraPar$FT
+            SelectedUnits <- unique(getData(FT)[, c(IDQual), with = FALSE])
+            ModelParam[, Flagged := ifelse(NOrden %in% SelectedUnits[[IDQual]], 'Selected', 'Not Selected')]
+            ModelParam[, Queried := 'Queried']
+            for (Domain in DomainNames){
+
+              ModelParam[, (Domain) := QueriedDomain[[Domain]]]
             }
-            
-            if (all(DomainNames %in% names(ExtraPar$Query))) {
-              
-              QueriedDomain <- merge(x@Domains, ExtraPar$Query, by = DomainNames)
-              if (dim(QueriedDomain)[1] == 0) stop('[SelEditUnitAllocation::plot] The population domain specified in Query not present in x (AllocatedUnits).\n')
-              if (dim(QueriedDomain)[1] > 1)  stop('[SelEditUnitAllocation::plot] The population domain specified in Query must belong to a single sample domain in x (AllocatedUnits).\n')
-              setkeyv(QueriedDomain, DomainNames)
-              InDomainSel <- unlist(lapply(seq(along = x@Units), function(index){
-                
-                auxDT <- merge(x@Domains[index], QueriedDomain, by = DomainNames)
-                
-                if (dim(auxDT)[1] > 0) {
-                  
-                  return(TRUE)
-                  
-                } else {
-                  
-                  return(FALSE)
-                }
-              }))
-              
-              SelectedUnits <- copy(x@Units)[[which(InDomainSel)]]
-              setkeyv(SelectedUnits, IDQual)
-              Units <- merge(ExtraPar$UnitParam, QueriedDomain, by = names(QueriedDomain))
-              
-              nVar <- length(y)
-              if (nVar > 4) stop('[SelEditUnitAllocation::plot] At most 4 variables can be plotted.\n')
-              Data <- ExtraPar$ModelParam[IDEdit %in% y]
-              Data <- merge(Data, ExtraPar$UnitParam, all.x = TRUE, by = IDQual)
-              setkeyv(Data, DomainNames)
-              Data <- Data[QueriedDomain]
-              SelectedUnits[, Flagged := 1]
-              Data <- merge(Data, SelectedUnits, all.x = TRUE, by = IDQual)
-              Data[is.na(Flagged), Flagged := 0]
-              Data[, Flagged := factor(Flagged, levels = c(1, 0), labels = c('Selected', 'Not Selected'))]
-              Units[, Queried := 10]
-              Data <- merge(Data, Units, by = intersect(names(Data), names(Units)), all.x = TRUE)
-              Data[is.na(Queried), Queried := 7]
-              Data[, Queried := factor(Queried, levels = c(10, 7), labels = c('Queried', 'Not Queried'))]
-              setnames(Data, 'QuantileDesignW', 'QuantileSamplingWeight')
-              return(Data)
-              out.graph <- ggplot(Data, aes(x = Var, y = PredValues)) +
-                geom_errorbar(aes(ymin = PredValues - PredErrorSTD, ymax = PredValues + PredErrorSTD), width = .1) +
-                geom_point(aes(size = QuantileSamplingWeight, colour = Flagged, shape = Queried)) +
-                scale_shape_discrete(solid = FALSE) +#values = Data$Shape) +
-                scale_colour_brewer(palette = "Set1") +
-                labs(size = expression(c[omega])) +
-                xlab('Raw values') +
-                ylab('Predicted values') +
-                geom_abline(intercept = 0, slope = 1) +
-                geom_blank(data = Data, aes(x = Var, y = PredValues)) +
-                facet_wrap( ~ IDEdit, ncol = nVar, scales = 'free') +
-                theme(plot.title = element_text(size = rel(1.5), lineheight = 1.5, face = 'bold', colour = 'black'),
-                      panel.background = element_rect(fill = "white"))
-              print(out.graph)
-              return(invisible(NULL))
-              
-            }
-            
-            
-            
-            
-            
-            
-            
-            #setnames(ModelParam.dt, '')
-            
-            
-            Layout <- grid.layout(nrow = 2, ncol = 1, heights = unit(c(2, 0.25), c("null", "null")))
-            grid.show.layout(Layout)
-            subplot <- function(x, y) viewport(layout.pos.row = x, layout.pos.col = y)
-            grid.newpage()
-            pushViewport(viewport(layout = Layout))
-            print(out.graph, vp = subplot(1, 1))
-            print(Data, vp = subplot(2, 1))
-            
+
+
+            # data.table UnitParam con los valores QuantileGlobalScore de las unidades seleccionadas en el FT
+            FT.dt <- dcast_StQ(FT)
+            setkeyv(FT.dt, IDQual)
+            FT.dt <- FT.dt[ExtraPar$Query]
+            UnitParam <- FT.dt[, c(IDQual, 'Parametro_07._5.1.1.6.'), with = FALSE]
+            setnames(UnitParam, 'Parametro_07._5.1.1.6.', 'QuantileGlobalScore')
+            UnitParam <- UnitParam[!is.na(UnitParam[['QuantileGlobalScore']])]
+
+
+            # data.table IDEdit.dt con los valores de IDEdit para las unidades seleccionadas en el FT
+            IDEdit.aux <- FT.dt[, 'IDEdit', with = FALSE]
+            IDEdit.aux <- unique(IDEdit.aux[!is.na(IDEdit.aux[['IDEdit']])][['IDEdit']])
+
+            IDEdit.dt <- lapply(VarNames, function(Var){
+
+              ModelParam.aux <- merge(ModelParam[, c(IDQual, 'variable'), with = FALSE], SelectedUnits, by = IDQual)
+              rows <- grep(Var, ModelParam.aux[['variable']])
+              Edit <- IDEdit.aux[grep(strsplit(Var, '_')[[1]][1], IDEdit.aux)]
+              out <- ModelParam.aux[rows][, IDEdit := Edit]
+              return(out)
+
+            })
+            IDEdit.dt <- rbindlist(IDEdit.dt)
+
+
+            # data.table ErrorMoments.dt con los valores QuantileErrorMoment
+            ErrorMoments <- ExtraPar$ErrorMoments
+            ErrorMoments.length <- length(ErrorMoments) / nVar
+            ErrorMoments.dt <- lapply(seq(along = VarNames), function(numVar){
+
+              init <- ErrorMoments.length * (numVar - 1) + 1
+              fin <- ErrorMoments.length * numVar
+              moments <- data.table(QuantileErrorMoment = ecdf(ErrorMoments[init:fin])(ErrorMoments[init:fin]))
+              out <- cbind(ExtraPar$Query, moments)
+              out[, variable := VarNames[numVar]]
+              return(out)
+
+            })
+            ErrorMoments.dt <- rbindlist(ErrorMoments.dt)
+
+            # Unimos los data.table ModelParam, UnitParam, IDEdit.dt y ErrorMoments.dt para obtener el data.table final Data
+            Data <- merge(ModelParam, UnitParam, by = IDQual, all.x = TRUE)
+            Data <- merge(Data, IDEdit.dt, by = c(IDQual, 'variable'), all.x = TRUE)
+            Data <- merge(Data, ErrorMoments.dt, by = c(IDQual, 'variable'))
+
+            # Representación gráfica
+            out.graph <- ggplot(Data, aes(x = RawValues, y = PredValues)) +
+              geom_errorbar(aes(ymin = PredValues - PredErrorSTD, ymax = PredValues + PredErrorSTD), width = .1) +
+              geom_point(aes(size = QuantileSamplingWeight, colour = Flagged, shape = Flagged)) +
+              scale_shape_discrete(solid = FALSE) +#values = Data$Shape) +
+              scale_colour_brewer(palette = "Set1") +
+              labs(size = expression(c[omega])) +
+              xlab('Raw values') +
+              ylab('Predicted values') +
+              geom_abline(intercept = 0, slope = 1) +
+              geom_blank(data = Data, aes(x = RawValues, y = PredValues)) +
+              facet_wrap( ~ variable, ncol = nVar, scales = 'free') +
+              theme(plot.title = element_text(size = rel(1.5), lineheight = 1.5, face = 'bold', colour = 'black'),
+                    panel.background = element_rect(fill = "white"))
+
+            Data <- Data[Flagged == 'Selected']
+            if (dim(Data)[1] == 0) return(out.graph)
+            Data <- Data[, c(IDQual, DomainNames, 'IDEdit', 'QuantileErrorMoment', 'QuantileSamplingWeight', 'QuantileGlobalScore', 'RawValues', 'PredValues'), with = FALSE]
+            Data <- as.data.frame(Data)
+            names(Data) <- c(IDQual, DomainNames, 'IDEdit', expression(c[M[kk]]), expression(c[omega[k]]), expression(c[S[k]]), 'RawValues', 'PredValues')
+            tblData <- gridExtra::tableGrob(Data, rows = NULL, theme = gridExtra::ttheme_default(base_size = 9, colhead = list(fg_params = list(parse=TRUE))))
+            gridExtra::grid.arrange(out.graph, tblData,
+                                    nrow = 2,
+                                    as.table = TRUE,
+                                    heights = c(3, 1))
+
             return(invisible(NULL))
+
           })
