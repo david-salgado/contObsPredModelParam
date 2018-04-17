@@ -59,7 +59,7 @@ setMethod(f = "plot",
               out <- list()
               for (Var in VarNames){
 
-                out[[Var]] <- names[grep(Var, names)]
+                out[[Var]] <- names[grep(paste0(Var, '$'), names)]
               }
 
               out <- unlist(out)
@@ -71,7 +71,6 @@ setMethod(f = "plot",
             predValuesNames <- namesQueried[['predValuesNames']]
             nuNames <- namesQueried[['nuNames']]
             wNames <- namesQueried[['wNames']]
-
 
             ExtraPar <- list(...)
             if (!'Query' %in% names(ExtraPar)) stop('[contObsPredModelParam::plot] Query is a compulsory parameter.\n')
@@ -103,13 +102,13 @@ setMethod(f = "plot",
             SamplingWeight.dt <- rbindlist(SamplingWeight)
 
             # data.tables con los valores RawVar, PredValues, PredErrorSTD y ObsErrorSTD
-            ModelParam.melt <- melt(ModelParam)
+            ModelParam.melt <- melt(ModelParam, id.vars = IDQual)
             RawVar <- ModelParam.melt[variable %in% VarNames][, c(IDQual, 'variable', 'value'), with = FALSE]
             setnames(RawVar, 'value', 'RawValues')
             PredValues <- ModelParam.melt[variable %in% predValuesNames][, c(IDQual, 'variable', 'value'), with = FALSE]
             PredValues <- lapply(VarNames, function(Var){
 
-              rows <- grep(Var, PredValues[['variable']])
+              rows <- grep(paste0(Var, '$'), PredValues[['variable']])
               out <- PredValues[rows][, variable := Var]
               return(out)
 
@@ -119,7 +118,7 @@ setMethod(f = "plot",
             PredErrorSTD <- ModelParam.melt[variable %in% nuNames][, c(IDQual, 'variable', 'value'), with = FALSE]
             PredErrorSTD <- lapply(VarNames, function(Var){
 
-              rows <- grep(Var, PredErrorSTD[['variable']])
+              rows <- grep(paste0(Var, '$'), PredErrorSTD[['variable']])
               out <- PredErrorSTD[rows][, variable := Var]
               return(out)
 
@@ -129,7 +128,7 @@ setMethod(f = "plot",
             ObsErrorSTD <- ModelParam.melt[variable %in% sigmaNames][, c(IDQual, 'variable', 'value'), with = FALSE]
             ObsErrorSTD <- lapply(VarNames, function(Var){
 
-              rows <- grep(Var, ObsErrorSTD[['variable']])
+              rows <- grep(paste0(Var, '$'), ObsErrorSTD[['variable']])
               out <- ObsErrorSTD[rows][, variable := Var]
               return(out)
 
@@ -153,30 +152,33 @@ setMethod(f = "plot",
 
 
             # data.table UnitParam con los valores QuantileGlobalScore de las unidades seleccionadas en el FT
+            DD <- getDD(FT)
             FT.dt <- dcast_StQ(FT)
             setkeyv(FT.dt, IDQual)
             FT.dt <- FT.dt[ExtraPar$Query]
-            UnitParam <- FT.dt[, c(IDQual, 'Parametro_07._5.1.1.6.'), with = FALSE]
-            setnames(UnitParam, 'Parametro_07._5.1.1.6.', 'QuantileGlobalScore')
-            UnitParam <- UnitParam[!is.na(UnitParam[['QuantileGlobalScore']])]
+            CuantGlob <- UnitToIDDDNames('CuantGlob', DD)
+            UnitParam <- FT.dt[, c(IDQual, CuantGlob), with = FALSE]
+            setnames(UnitParam, CuantGlob, 'CuantGlob')
+            UnitParam <- UnitParam[!is.na(UnitParam[['CuantGlob']])]
 
 
             # data.table IDEdit.dt con los valores de IDEdit para las unidades seleccionadas en el FT
             IDEdit.aux <- FT.dt[, 'IDEdit', with = FALSE]
             IDEdit.aux <- unique(IDEdit.aux[!is.na(IDEdit.aux[['IDEdit']])][['IDEdit']])
 
-            IDEdit.dt <- lapply(VarNames, function(Var){
-
-              ModelParam.aux <- merge(ModelParam[, c(IDQual, 'variable'), with = FALSE], SelectedUnits, by = IDQual)
-              rows <- grep(Var, ModelParam.aux[['variable']])
-              Edit <- IDEdit.aux[grep(strsplit(Var, '_')[[1]][1], IDEdit.aux)]
-              out <- ModelParam.aux[rows][, IDEdit := Edit]
-              return(out)
-
-            })
-            IDEdit.dt <- rbindlist(IDEdit.dt)
-
-
+            # IDEdit.dt <- lapply(VarNames, function(Var){
+            # 
+            #   ModelParam.aux <- merge(ModelParam[, c(IDQual, 'variable'), with = FALSE], SelectedUnits, by = IDQual)
+            #   rows <- grep(paste0(Var, '$'), ModelParam.aux[['variable']])
+            #   Edit <- IDEdit.aux[grep(strsplit(Var, '_')[[1]][1], IDEdit.aux)]
+            #   out <- ModelParam.aux[rows][, IDEdit := Edit]
+            #   return(out)
+            # 
+            # })
+            # IDEdit.dt <- rbindlist(IDEdit.dt)
+            IDEdit.dt <- merge(ModelParam[, c(IDQual, 'variable'), with = FALSE], SelectedUnits, by = IDQual)
+            IDEdit.dt[, IDEdit := variable]
+            
             # data.table ErrorMoments.dt con los valores QuantileErrorMoment
             ErrorMoments <- ExtraPar$ErrorMoments
             ErrorMoments.length <- length(ErrorMoments) / nVar
@@ -214,7 +216,7 @@ setMethod(f = "plot",
 
             Data <- Data[Flagged == 'Selected']
             if (dim(Data)[1] == 0) return(out.graph)
-            Data <- Data[, c(IDQual, DomainNames, 'IDEdit', 'QuantileErrorMoment', 'QuantileSamplingWeight', 'QuantileGlobalScore', 'RawValues', 'PredValues'), with = FALSE]
+            Data <- Data[, c(IDQual, DomainNames, 'IDEdit', 'QuantileErrorMoment', 'QuantileSamplingWeight', 'CuantGlob', 'RawValues', 'PredValues'), with = FALSE]
             Data <- as.data.frame(Data)
             names(Data) <- c(IDQual, DomainNames, 'IDEdit', expression(c[M[kk]]), expression(c[omega[k]]), expression(c[S[k]]), 'RawValues', 'PredValues')
             tblData <- gridExtra::tableGrob(Data, rows = NULL, theme = gridExtra::ttheme_default(base_size = 9, colhead = list(fg_params = list(parse=TRUE))))
