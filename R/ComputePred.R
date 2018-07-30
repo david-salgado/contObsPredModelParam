@@ -101,8 +101,8 @@ setMethod(f = "ComputePred",
                 newDD <- DD(VNC = newVNC, MicroData = newDDdt)
                 newDD <- DD + newDD
 
-                newData <- output[, c(IDQuals, paste0(c('Pred', 'PredErrorSTD'), Var)), with = FALSE]
-
+                newData <- output[, c(IDQuals, paste0(prefix, Var)), with = FALSE]
+                
                 newStQ <- melt_StQ(newData, newDD)
                 setData(object)<- getData(object) + newStQ
               }
