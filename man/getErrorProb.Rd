@@ -11,11 +11,10 @@ getErrorProb(object)
 \S4method{getErrorProb}{contObsPredModelParam}(object)
 }
 \arguments{
-\item{object}{Object of class \linkS4class{ErrorProbParam}.}
+\item{object}{Object of class \linkS4class{contObsPredModelParam}.}
 }
 \value{
-character vector corresponding to the component \code{ErrorProb} of the input
-parameter.
+character vector corresponding to the component \code{ErrorProb} of the input parameter.
 }
 \description{
 \code{getErroProb} extracts the component \code{ErrorProb} of the slot

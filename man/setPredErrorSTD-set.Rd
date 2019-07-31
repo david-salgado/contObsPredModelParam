@@ -2,20 +2,20 @@
 % Please edit documentation in R/setPredErrorSTD.R
 \name{setPredErrorSTD<-}
 \alias{setPredErrorSTD<-}
-\title{Set value of component \code{PredErrorSTD} of an object \linkS4class{contObsPredModelParam}}
+\title{Set value of component \code{PredErrSTD} of an object \linkS4class{contObsPredModelParam}}
 \usage{
 setPredErrorSTD(object) <- value
 }
 \arguments{
-\item{object}{Object \linkS4class{contObsPredModelParam} whose component \code{PredErrorSTD}
-is to be assigned.}
+\item{object}{Object \linkS4class{contObsPredModelParam} whose component \code{PredErrSTD} is to
+be assigned.}
 
 \item{value}{character vector to be assigned to the component \code{PredErrorSTD}.}
 }
 \value{
-Object \linkS4class{contObsPredModelParam} with the component \code{PredErrorSTD} updated.
+Object \linkS4class{contObsPredModelParam} with the component \code{PredErrSTD} updated.
 }
 \description{
-\code{setPredErrorSTD} assigns a character value to the component \code{PredErrorSTD}
+\code{setPredErrorSTD} assigns a character value to the component \code{PredErrSTD}
 of the slot \code{VarRoles} of the input object \linkS4class{contObsPredModelParam}.
 }

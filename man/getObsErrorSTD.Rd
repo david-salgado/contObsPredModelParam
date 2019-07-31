@@ -4,7 +4,7 @@
 \name{getObsErrorSTD}
 \alias{getObsErrorSTD}
 \alias{getObsErrorSTD,contObsPredModelParam-method}
-\title{Return component \code{ObsErrorSTD} from the input object}
+\title{Return component \code{ObsErrSTD} from the input object}
 \usage{
 getObsErrorSTD(object)
 
@@ -14,11 +14,10 @@ getObsErrorSTD(object)
 \item{object}{Object of class \linkS4class{contObsPredModelParam}.}
 }
 \value{
-character vector corresponding to the component \code{ObsErrorSTD} of the input
-parameter.
+character vector corresponding to the component \code{ObsErrSTD} of the input parameter.
 }
 \description{
-\code{getObsErrorSTD} extracts the component \code{ObsErrorSTD} of the slot
+\code{getObsErrorSTD} extracts the component \code{ObsErrSTD} of the slot
 \code{VarRoles} of the input object.
 }
 \examples{

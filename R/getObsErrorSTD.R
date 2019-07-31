@@ -1,12 +1,11 @@
-#' @title Return component \code{ObsErrorSTD} from the input object
+#' @title Return component \code{ObsErrSTD} from the input object
 #'
-#' @description \code{getObsErrorSTD} extracts the component \code{ObsErrorSTD} of the slot
+#' @description \code{getObsErrorSTD} extracts the component \code{ObsErrSTD} of the slot
 #' \code{VarRoles} of the input object.
 #'
 #' @param object Object of class \linkS4class{contObsPredModelParam}.
 #'
-#' @return character vector corresponding to the component \code{ObsErrorSTD} of the input
-#' parameter.
+#' @return character vector corresponding to the component \code{ObsErrSTD} of the input parameter.
 #'
 #' @examples
 #'
@@ -19,5 +18,5 @@ setGeneric("getObsErrorSTD", function(object){standardGeneric("getObsErrorSTD")}
 setMethod(
   f = "getObsErrorSTD",
   signature = c("contObsPredModelParam"),
-  function(object){object@VarRoles$ObsErrorSTD}
+  function(object){object@VarRoles$ObsErrSTD}
 )

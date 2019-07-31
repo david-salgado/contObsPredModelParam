@@ -4,7 +4,7 @@
 \name{getPredErrorSTD}
 \alias{getPredErrorSTD}
 \alias{getPredErrorSTD,contObsPredModelParam-method}
-\title{Return component \code{getPredErrorSTD} from the input object}
+\title{Return component \code{PredErrSTD} from the input object}
 \usage{
 getPredErrorSTD(object)
 
@@ -14,7 +14,7 @@ getPredErrorSTD(object)
 \item{object}{Object of class \linkS4class{contObsPredModelParam}.}
 }
 \value{
-character vector corresponding to the component \code{getPredErrorSTD} of the input
+character vector corresponding to the component \code{PredErrSTD} of the input
 parameter.
 }
 \description{

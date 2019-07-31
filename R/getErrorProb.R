@@ -3,10 +3,10 @@
 #' @description \code{getErroProb} extracts the component \code{ErrorProb} of the slot
 #' \code{VarRoles} of the input object.
 #'
-#' @param object Object of class \linkS4class{ErrorProbParam}.
+#' @param object Object of class \linkS4class{contObsPredModelParam}.
 #'
-#' @return character vector corresponding to the component \code{ErrorProb} of the input
-#' parameter.
+#' @return character vector corresponding to the component \code{ErrorProb} of the input parameter.
+#'
 #'
 #' @examples
 #'
