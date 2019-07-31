@@ -2,13 +2,13 @@
 #'
 #'
 #' @param object Object of class \linkS4class{contObsPredModelParam} containing the statistical
-#' units whose probability of measurement error for each variable is to be computed.
+#' units whose probability of measurement error for the variables is to be computed.
 #'
 #' @param Param Object of virtual class \linkS4class{ErrorProbParam} with the parameters determining
-#' the method of computation of the probability of measurement error of each statistical unit.
+#' the variables and the method of computation of the probability of measurement error.
 #'
 #' @return Object of class \linkS4class{contObsPredModelParam} with the measurement error
-#' probabilities computed for each variable and each statistical unit.
+#' probabilities computed for each variable specified in the parameters and each statistical unit.
 #'
 #'
 #' @examples

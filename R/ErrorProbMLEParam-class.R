@@ -1,14 +1,14 @@
 #' @title S4 class for the parameters of the ML estimation of the probability of measurement error
 #'
 #' @description Definition of the S4 class named \code{ErrorProbMLEParam} for the parameters of
-#' a continuous observation-prediction model in the optimization approach to selective editing.
+#' the ML estimation of the probability of measurement error.
 #'
 #'
 #' @slot RawData \linkS4class{StQList} object with the raw data.
 #'
 #' @slot EdData \linkS4class{StQList} object with the edited data.
 #'
-#' @slot VarNames Character vector with the names of the variables whose probability errors are to
+#' @slot VarNames Character vector with the names of the variables whose error probabilities are to
 #' be computed.
 #'
 #' @slot Imputation \linkS4class{ImputationParam} object with the parameters to imputed missing

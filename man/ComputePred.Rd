@@ -13,15 +13,15 @@ ComputePred(object, Param)
 }
 \arguments{
 \item{object}{Object of class \linkS4class{contObsPredModelParam} containing the statistical
-units whose predicted values and prediction error std for each variable is to be computed.}
+units whose predicted values and prediction error std is to be computed.}
 
 \item{Param}{Object of virtual class \linkS4class{PredParam} with the parameters determining
-the method of computation of the predicted values and prediction error std of each statistical
-unit.}
+the variables and the method of computation of the predicted values and prediction error std.}
 }
 \value{
 Object of class \linkS4class{contObsPredModelParam} with the predicted values and
-prediction error std computed for each variable and each statistical unit.
+prediction error std computed for each variable specified in the parameters and each statistical
+unit.
 }
 \description{
 \code{ComputePred} computes the predicted values and the prediction error std for each
@@ -39,31 +39,28 @@ FD <- ReadRepoFile('S:/E30183/E30183.FD_V1.MM032016.P_1', DD, perl = TRUE)
 ObsPredPar <- new(Class = 'contObsPredModelParam',
                   Data = FD,
                   VarRoles = list(Units = 'NOrden', Domains = c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0')))
-ImpParam <- new(Class = 'MeanImputationParam',
-                VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
-                             'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
-                DomainNames =  c('Tame_05._2.'))
-PredlmParam <- new(Class = 'PredlmParam',
-                   EdData = FD,
-                   VarNames = c('CifraNeg_13.___', 'Personal_07.__2.__'),
-                   DomainNames = 'Tame_05._2.',
-                   Imputation = ImpParam)
+                  
 TS.list <- list(Reg = list('RegDiffTSPred', forward = 2L),
                 Stat = list('StatDiffTSPred', forward = 2L),
                 StatReg = list('StatRegDiffTSPred', forward = 2L))
 VarNames <- c('CifraNeg_13.___', 'Personal_07.__2.__')
+
 BestTSPredParam <- new(Class='BestTSPredParam', TSPred.list = TS.list, VarNames = VarNames)
+                
+PredTSParam <- new(Class = 'PredTSParam',
+                   TS = FF.StQList,
+                   Param = BestTSPredParam)
+
 ImpParam <- new(Class = 'MeanImputationParam',
                 VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
                              'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
                 DomainNames =  c('Tame_05._2.'))
-PredTSParam <- new(Class = 'PredTSParam',
-                   TS = FF.StQList,
-                   Param = BestTSPredParam,
-                   Imputation = ImpParam)
-
-ObsPredPar <- ComputePred(ObsPredPar, PredlmParam)
-ObsPredPar <- ComputePred(ObsPredPar, PredTSParam)
+                                   
+PredValueTSParam <- new(Class = 'PredValueTSParam',
+                        PredictionParam = PredTSParam,
+                        ImputationParam = ImpParam)
+                        
+ObsPredPar <- ComputePred(ObsPredPar, PredValueTSParam)
 
 }
 }

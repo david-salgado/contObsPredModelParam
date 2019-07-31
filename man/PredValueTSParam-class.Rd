@@ -3,40 +3,24 @@
 \docType{class}
 \name{PredValueTSParam-class}
 \alias{PredValueTSParam-class}
-\title{S4 class for the parameters of time series prediction in an observation-prediction model.}
+\title{S4 class for the parameters to compute the predicted values and the prediction error std
+for each variable specified in the parameter for prediction}
 \description{
-Definition of the S4 class named \code{PredValueTSParam} for the parameters of
-a continuous observation-prediction model in the optimization approach to selective editing.
+Definition of the S4 class named \code{PredValueTSParam} for the parameters to
+compute the predicted values and the prediction error std.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{RawData}}{\linkS4class{StQList} object with the raw data.}
+\item{\code{PredictionParam}}{\linkS4class{PredTSParam} object with the parameters to compute the
+predicted values and their standard deviations.}
 
-\item{\code{EdData}}{\linkS4class{StQList} object with the edited data.}
-
-\item{\code{VarNames}}{Character vector with the names of the variables whose probability errors are to
-be computed.}
-
-\item{\code{Imputation}}{\linkS4class{ImputationParam} object with the parameters to imputed missing
-values during the computation of the error probabilities.}
+\item{\code{ImputationParam}}{\linkS4class{ImputationParam} object with the parameters to impute missing
+values during the computation of the predicted values and their standard deviations.}
 }}
 
 \examples{
 # An empty contObsPredModelParam object:
-new(Class = 'ErrorProbMLEParam')
-
-\dontrun{
-ImpParam <- new(Class = 'PredValueTSParam',
-                PredParam = ,
-                ImputationParam =  )
-ErrorProbMLEParam <- new(Class = 'ErrorProbMLEParam',
-                         RawData = FD.StQList,
-                         EdData = FF.StQList,
-                         VarNames = 'CifraNeg_13.___',
-                         Imputation = ImpParam)
-
-
-}
+new(Class = 'PredValueTSParam')
 
 }

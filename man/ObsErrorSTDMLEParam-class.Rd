@@ -6,7 +6,7 @@
 \title{S4 class for the parameters of the ML estimation of the obervation error variance}
 \description{
 Definition of the S4 class named \code{ObsErrorSTDMLEParam} for the parameters of
-a continuous observation-prediction model in the optimization approach to selective editing.
+the ML estimation of the obervation error variance.
 }
 \section{Slots}{
 
@@ -15,11 +15,11 @@ a continuous observation-prediction model in the optimization approach to select
 
 \item{\code{EdData}}{\linkS4class{StQList} object with the edited data.}
 
-\item{\code{VarNames}}{Character vector with the names of the variables whose probability errors are to
-be computed.}
+\item{\code{VarNames}}{Character vector with the names of the variables whose probability of measurement
+error are to be computed.}
 
 \item{\code{Imputation}}{\linkS4class{ImputationParam} object with the parameters to imputed missing
-values during the computation of the error probabilities.}
+values during the computation of the measurement error probabilities.}
 }}
 
 \examples{

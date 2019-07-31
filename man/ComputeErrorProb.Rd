@@ -12,14 +12,14 @@ ComputeErrorProb(object, Param)
 }
 \arguments{
 \item{object}{Object of class \linkS4class{contObsPredModelParam} containing the statistical
-units whose probability of measurement error for each variable is to be computed.}
+units whose probability of measurement error for the variables is to be computed.}
 
 \item{Param}{Object of virtual class \linkS4class{ErrorProbParam} with the parameters determining
-the method of computation of the probability of measurement error of each statistical unit.}
+the variables and the method of computation of the probability of measurement error.}
 }
 \value{
 Object of class \linkS4class{contObsPredModelParam} with the measurement error
-probabilities computed for each variable and each statistical unit.
+probabilities computed for each variable specified in the parameters and each statistical unit.
 }
 \description{
 \code{ComputeErrorProb} computes the probability of measurement error for each statistical unit

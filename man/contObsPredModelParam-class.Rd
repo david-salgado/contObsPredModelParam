@@ -11,12 +11,13 @@ a continuous observation-prediction model in the optimization approach to select
 \section{Slots}{
 
 \describe{
-\item{\code{Data}}{\linkS4class{data.table} with the parameters or all data necessary to compute them.}
+\item{\code{Data}}{object of class \linkS4class{StQ} with the parameters or all data necessary to compute
+them.}
 
 \item{\code{VarRoles}}{List with components \code{Units}, \code{Domains}, \code{DesignW},
-\code{ObjVariables}, \code{PredValues}, \code{PredErrorSTD}, \code{ObsErrorSTD},
-\code{ErrorProb} being character vectors containing the column names according to their
-respective role in the model.}
+\code{ObjVariables}, \code{PredValues}, \code{PredErrSTD}, \code{ObsErrSTD}, \code{ErrorProb}
+being character vectors containing the column names in Data according to their respective role
+in the model.}
 }}
 
 \examples{
@@ -25,9 +26,6 @@ new(Class = 'contObsPredModelParam')
 
 \dontrun{
 
-ObsPredPar <- new(Class = 'contObsPredModelParam',
-                  Data = FD,
-                  VarRoles = list(Units = 'NOrden', Domains = 'Tame_05._2.'))
 
 }
 

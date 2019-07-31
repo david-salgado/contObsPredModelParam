@@ -5,8 +5,8 @@
 #'
 #' @param object Object of class \linkS4class{ObsErrorSTDParam} or \linkS4class{ErrorProbParam}.
 #'
-#' @return Object of class \linkS4class{ImputationParam} corresponding to the slot \code{Imputation}
-#' of the input parameter.
+#' @return Object of class \linkS4class{ImputationParam} corresponding to the slot with parameters
+#' to impute of the input parameter.
 #'
 #' @examples
 #'
@@ -21,7 +21,7 @@ setMethod(
   signature = c("ObsErrorSTDParam"),
   function(object){object@Imputation}
 )
-#'
+
 #' @rdname getImputation
 #'
 #' @export
@@ -30,4 +30,3 @@ setMethod(
   signature = c("ErrorProbParam"),
   function(object){object@Imputation}
 )
-

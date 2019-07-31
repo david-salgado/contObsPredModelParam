@@ -4,14 +4,15 @@
 \name{plot,contObsPredModelParam,character-method}
 \alias{plot,contObsPredModelParam,character-method}
 \title{Plot the main values in the optimization approach to selective editing for the specified
-units.}
+units and show information about it.}
 \usage{
 \S4method{plot}{contObsPredModelParam,character}(x, y, ...)
 }
 \arguments{
 \item{x}{Object of class \linkS4class{contObsPredModelParam}.}
 
-\item{y}{Charactec vector with the names of the variable names.}
+\item{y}{\code{Character} vector with the names of the variable names. These names must be the
+names of the Edits in the FT argument.}
 
 \item{...}{Arguments to be passed to methods, especially including
 
@@ -20,15 +21,19 @@ units.}
  \item \code{Query} as a \linkS4class{data.table} with the values of the identification
  variables of the queried statistical units;
 
+ \item \code{Ref} as a \code{Character} vector with the conditions that set the units with which
+ to compare
+
  \item \code{FT} as a \linkS4class{StQ} object with the values of the selected units in the
  optimization approach to selective editing;
 
- \item \code{ErrorMoments} as a \code{numeric} vector with the error moments corresponding to
- queried units;
+ \item \code{ErrorMoments} as a \linkS4class{ErrorMoments} object with the error moments
+ corresponding to queried units;
 }}
 }
 \value{
-Returns an invisible \code{NULL} plotting the one scatterplot per variable.
+Returns an invisible \code{NULL} plotting the one scatterplot per variable and a
+\linkS4class{data.table} with information about the results of selective editing.
 }
 \description{
 This method overloads the plot function to draw a picture with the information about

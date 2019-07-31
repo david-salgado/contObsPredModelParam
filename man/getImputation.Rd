@@ -17,8 +17,8 @@ getImputation(object)
 \item{object}{Object of class \linkS4class{ObsErrorSTDParam} or \linkS4class{ErrorProbParam}.}
 }
 \value{
-Object of class \linkS4class{ImputationParam} corresponding to the slot \code{Imputation}
-of the input parameter.
+Object of class \linkS4class{ImputationParam} corresponding to the slot with parameters
+to impute of the input parameter.
 }
 \description{
 \code{getImputation} extracts the slot \code{Imputation} of the input object, which

@@ -4,7 +4,7 @@
 \name{getDomainNames}
 \alias{getDomainNames}
 \alias{getDomainNames,ObsErrorSTDParam-method}
-\alias{getDomainNames,ErrorProbMLEParam-method}
+\alias{getDomainNames,ErrorProbParam-method}
 \alias{getDomainNames,PredValueTSParam-method}
 \title{Return slot \code{DomainNames} from the input object.}
 \usage{
@@ -12,7 +12,7 @@ getDomainNames(object)
 
 \S4method{getDomainNames}{ObsErrorSTDParam}(object)
 
-\S4method{getDomainNames}{ErrorProbMLEParam}(object)
+\S4method{getDomainNames}{ErrorProbParam}(object)
 
 \S4method{getDomainNames}{PredValueTSParam}(object)
 }
@@ -21,8 +21,7 @@ getDomainNames(object)
 \linkS4class{PredValueTSParam}.}
 }
 \value{
-character vector corresponding to the slot \code{DomainNames} of the input
-parameter.
+character vector corresponding to the slot \code{DomainNames} of the input parameter.
 }
 \description{
 \code{getDomainNames} extracts the slot \code{DomainNames}, the names of the
@@ -30,9 +29,9 @@ variables determining the domains over which to compute the imputation method of
 of the input object.
 
 In the case of objects of classes \linkS4class{ObsErrorSTDParam} and \linkS4class{ErrorProbParam},
-it returns the \code{VarNames} of the slot \code{Imputation}.
+it returns the \code{DomainNames} of the slot \code{Imputation}.
 
-In the case of objects of class \linkS4class{PredValueTSParam}, it returns the \code{VarNames}
+In the case of objects of class \linkS4class{PredValueTSParam}, it returns the \code{DomainNames}
 of the slot \code{ImputationParam}.
 }
 \examples{

@@ -2,13 +2,13 @@
 #'
 #'
 #' @param object Object of class \linkS4class{contObsPredModelParam} containing the statistical
-#' units whose probability of measurement error for each variable is to be computed.
+#' units whose observation error variance for the variables is to be computed.
 #'
-#' @param Param Object of virtual class \linkS4class{ObsErrorSTDParam} with the parameters determining
-#' the method of computation of the observation error variance of each statistical unit.
+#' @param Param Object of virtual class \linkS4class{ObsErrorSTDParam} with the parameters
+#' determining the variables and the method of computation of the observation error variance.
 #'
-#' @return Object of class \linkS4class{ObsErrorSTDParam} with the measurement error
-#' probabilities computed for each variable and each statistical unit.
+#' @return Object of class \linkS4class{contObsPredModelParam} with the observation error variance
+#' computed for each variable specified in the parameters and each statistical unit.
 #'
 #'
 #' @examples
@@ -54,7 +54,6 @@ setMethod(f = "ComputeObsErrorSTD",
               stop('[contObsPredModelParam: validity] No common time periods between RawData and EdData.')
 
             }
-            Variables <- getVarNames(Param)
             Variables <- getVarNames(Param)
             PeriodList <- lapply(CommonPeriods, function(Period){
 
