@@ -25,14 +25,14 @@
 #' ObsPredPar <- new(Class = 'contObsPredModelParam',
 #'                   Data = FD,
 #'                   VarRoles = list(Units = 'NOrden', Domains = c('Tame_05._4.', 'ActivEcono_35._4._2.1.4._0')))
-#'                   
+#'
 #' TS.list <- list(Reg = list('RegDiffTSPred', forward = 2L),
 #'                 Stat = list('StatDiffTSPred', forward = 2L),
 #'                 StatReg = list('StatRegDiffTSPred', forward = 2L))
 #' VarNames <- c('CifraNeg_13.___', 'Personal_07.__2.__')
-#' 
+#'
 #' BestTSPredParam <- new(Class='BestTSPredParam', TSPred.list = TS.list, VarNames = VarNames)
-#'                 
+#'
 #' PredTSParam <- new(Class = 'PredTSParam',
 #'                    TS = FF.StQList,
 #'                    Param = BestTSPredParam)
@@ -41,11 +41,11 @@
 #'                 VarNames = c('PredCifraNeg_13.___', 'PredErrorSTDCifraNeg_13.___',
 #'                              'PredPersonal_07.__2.__', 'PredErrorSTDPersonal_07.__2.__'),
 #'                 DomainNames =  c('Tame_05._2.'))
-#'                                    
+#'
 #' PredValueTSParam <- new(Class = 'PredValueTSParam',
 #'                         PredictionParam = PredTSParam,
 #'                         ImputationParam = ImpParam)
-#'                         
+#'
 #' ObsPredPar <- ComputePred(ObsPredPar, PredValueTSParam)
 #'
 #' }
@@ -76,7 +76,8 @@ setMethod(f = "ComputePred",
             ErrorSTDVariables <- paste0('PredErrorSTD', getVarNames(Param))
             ImpParam <- getImputationParam(Param)
             setVarNames(ImpParam) <- c(PredVariables, ErrorSTDVariables)
-            output <- merge(output, RawData.dm[, c(IDQuals, DomainNames), with = FALSE], all.x = TRUE, by = IDQuals)
+            localDomainNames <- intersect(DomainNames, names(RawData.dm))
+            output <- merge(output, RawData.dm[, c(IDQuals, localDomainNames), with = FALSE], all.x = TRUE, by = IDQuals)
             output <- Impute(output, ImpParam)
 
             DD <- getDD(getData(object))
@@ -99,7 +100,7 @@ setMethod(f = "ComputePred",
                 newDD <- DD + newDD
 
                 newData <- output[, c(IDQuals, paste0(prefix, Var)), with = FALSE]
-                
+
                 newStQ <- melt_StQ(newData, newDD)
                 setData(object)<- getData(object) + newStQ
               }
